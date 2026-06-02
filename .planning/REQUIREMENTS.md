@@ -18,7 +18,7 @@
 
 ### Analysis
 
-- [ ] **ANLY-01**: Tool computes Commit Crimes values for total commits, commits this month, top contributor, and estimated bus factor.
+- [ ] **ANLY-01**: Tool computes Commit Crimes values for total commits, commits this month, top contributor, and the V1-defined bus factor metric from `research/METRICS.md`.
 - [ ] **ANLY-02**: Tool computes Branch Jungle values for total branches, active branches, stale branches, and oldest branch.
 - [ ] **ANLY-03**: Tool computes Ancient Relics values for oldest file, most modified file, oldest contributor, and longest living branch.
 - [ ] **ANLY-04**: Tool computes Language Soup percentages and renders them as report-ready values with ASCII progress bars.

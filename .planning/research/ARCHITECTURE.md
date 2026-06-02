@@ -67,7 +67,8 @@ src/
 
 **Example:**
 ```rust
-let snapshot = collector.collect(repo_url).await?;
+// Sequential pipeline — no async runtime in V1.
+let snapshot = collector.collect(repo_url)?;
 let report = analyzer.build_report(&snapshot)?;
 tui::render(report)?;
 ```
@@ -103,7 +104,7 @@ Repo URL
     ↓
 CLI validation
     ↓
-Metadata fetch + shallow clone + local scan
+Minimal API metadata + full clone + local scan
     ↓
 Normalized investigation snapshot
     ↓
@@ -137,12 +138,12 @@ TuiState { scroll_offset, viewport_height }
 | Scale | Architecture Adjustments |
 |-------|--------------------------|
 | Small/typical OSS repos | Single-process pipeline is enough |
-| Very branchy or long-lived repos | Paginate branch collection and cache intermediate facts |
-| Huge monorepos | Keep clone shallow, avoid loading full trees into memory at once |
+| Very branchy or long-lived repos | Keep branch/ref enumeration local, and cache intermediate facts from expensive history passes |
+| Huge monorepos | Keep the clone full but bound history walks; avoid loading full trees into memory at once |
 
 ### Scaling Priorities
 
-1. **First bottleneck:** repository collection time — fix with shallow clone, paginated API requests, and selective history walks.
+1. **First bottleneck:** repository collection time — fix with a single metadata call, full clone, and bounded/selective history walks.
 2. **Second bottleneck:** report generation over giant histories — fix with bounded analysis passes and cached intermediate facts.
 
 ## Anti-Patterns
@@ -165,8 +166,8 @@ TuiState { scroll_offset, viewport_height }
 
 | Service | Integration Pattern | Notes |
 |---------|---------------------|-------|
-| GitHub REST API | Authless public GET requests first | Respect unauthenticated rate limits and surface clear fallback errors. |
-| Remote git host | Read-only clone/fetch operations | Prefer shallow clone and targeted branch/metadata fetches. |
+| GitHub REST API | Single authless GET `/repos/{owner}/{repo}` | Only for stars/forks/description; everything else comes from git2. Surface clear fallback errors. |
+| Remote git host | Read-only full clone | Full clone for complete history; bound expensive analysis passes rather than limiting clone depth. |
 
 ### Internal Boundaries
 

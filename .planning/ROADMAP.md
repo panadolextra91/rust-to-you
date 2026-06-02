@@ -42,12 +42,14 @@ Plans:
   1. Tool can fetch overview metadata for a public GitHub repository.
   2. Tool can gather branch/history evidence and a local repo snapshot for downstream analyzers.
   3. Tool can detect language and infrastructure signals from repository files and config paths.
-**Plans**: 3 plans
+  4. A walking skeleton proves the full clone → single-metric → printed-output pipeline runs end-to-end.
+**Plans**: 4 plans
 
 Plans:
-- [ ] 02-01: Build GitHub client and metadata/branch models
-- [ ] 02-02: Implement shallow clone and git-history collectors
-- [ ] 02-03: Implement filesystem scanners and normalize an investigation snapshot
+- [ ] 02-01: Walking skeleton — full clone a repo, compute repo age, print it to stdout (proves the pipeline + git2 early; throwaway plain-text output)
+- [ ] 02-02: Build GitHub client and metadata models (stars, forks, description/topics only — git2 supplies the rest)
+- [ ] 02-03: Implement full clone and git-history collectors (commits, branches, contributors, file ages; bound expensive passes)
+- [ ] 02-04: Implement filesystem scanners and normalize an investigation snapshot
 
 ### Phase 3: Analysis Layer
 **Goal**: Turn normalized evidence into report-ready metrics for the core factual sections.
@@ -87,9 +89,10 @@ Plans:
   2. Interesting Findings and Crab Verdict read coherently on real sample repositories.
   3. End-to-end runs produce stable, trustworthy reports for representative public repos.
 **Plans**: 2 plans
+**Spec**: Repository Vibes ruleset is defined in `research/VIBES.md` (weighted scoring, MIN_SCORE=4, Chaotic Good fallback) — plan 05-01 implements and calibrates it.
 
 Plans:
-- [ ] 05-01: Implement and tune vibe, findings, and verdict heuristics
+- [ ] 05-01: Implement and tune vibe, findings, and verdict heuristics (vibe classifier per research/VIBES.md)
 - [ ] 05-02: Run fixture and manual report verification across sample repositories
 
 ## Progress
@@ -100,7 +103,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Intake & Guardrails | 0/2 | Not started | - |
-| 2. Collection Layer | 0/3 | Not started | - |
+| 2. Collection Layer | 0/4 | Not started | - |
 | 3. Analysis Layer | 0/3 | Not started | - |
 | 4. Presentation Layer | 0/2 | Not started | - |
 | 5. Polish & Calibration | 0/2 | Not started | - |

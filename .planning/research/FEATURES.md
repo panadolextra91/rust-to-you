@@ -39,7 +39,7 @@
 ```text
 Single-command repo intake
     └──requires──> URL validation + investigation session
-                          └──requires──> metadata fetch + shallow clone
+                          └──requires──> minimal API metadata + full clone
 
 Commit/branch/relic metrics
     └──requires──> normalized git snapshot
@@ -73,7 +73,7 @@ Multi-screen dashboard
 
 - [ ] `--json` output — add when users want piping or automation
 - [ ] Simple local caching — add when repeated investigations become common
-- [ ] Optional deeper scan mode — add if shallow/default behavior feels too lossy
+- [ ] Optional `--deep` mode — lift the default commit caps for unbounded history analysis when users want slower-but-richer archaeology
 
 ### Future Consideration (v2+)
 

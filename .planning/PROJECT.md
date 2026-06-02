@@ -40,7 +40,9 @@ Given one public GitHub repository URL, produce a cute, readable TUI investigati
 - The desired tone is intentionally playful: "repository archaeology & gossip," not enterprise analytics.
 - V1 input is exactly `rust-to-you <repo-url>` with no required flags.
 - The report should highlight both useful signals and funny observations, especially in Repository Vibes, Interesting Findings, and Crab Verdict.
-- The preferred implementation stack is Rust with `clap`, `git2`, `reqwest`, `serde`, `serde_json`, `tokio`, `ratatui`, `crossterm`, and `chrono`.
+- The preferred implementation stack is Rust with `clap`, `git2`, `reqwest` (blocking), `serde`, `serde_json`, `ratatui`, `crossterm`, and `chrono`. No async runtime in V1 — the pipeline is sequential and the GitHub API surface is a single call.
+- V1 does a **full clone** (not shallow): archaeology metrics (oldest file, most-modified file, bus factor, branch ages) need complete git history. Expensive history passes are bounded instead (e.g. cap commits scanned for most-modified-file).
+- The GitHub REST API is used **only** for facts git cannot provide locally — stars, forks, and description/topics. Everything else comes from the local clone: `git2` for commits/branches/contributors/file history, plus local scanners for languages and infra, so rate limits are a non-issue.
 
 ## Constraints
 
@@ -61,6 +63,13 @@ Given one public GitHub repository URL, produce a cute, readable TUI investigati
 | Product positioning is "repository archaeology & gossip" | Distinguishes the tool from dashboards and dry analytics | — Pending |
 | V1 is read-only | Prevents surprise side effects and keeps trust high | — Pending |
 | Not in V1: PRs, issues, security scans, dependency graphs, AI architecture review, auth | Protects MVP scope and keeps attention on the core report | — Pending |
+| V1 uses a full clone, not a shallow clone | Archaeology sections need complete history; expensive passes are bounded instead | ✅ Decided 2026-06-02 |
+| GitHub API limited to stars/forks/description; git2 supplies everything else | Shrinks API to one call → rate limits stop being a concern | ✅ Decided 2026-06-02 |
+| Drop `tokio`; use `reqwest` blocking | One sequential API call needs no async runtime; simpler for a first Rust project | ✅ Decided 2026-06-02 |
+| Ancient Relics does not track file renames in V1 | Rename-following is tricky and redundant for the playful report; keep it simple | ✅ Decided 2026-06-02 |
+| Add a walking-skeleton plan first in Phase 2 | Prove the clone→metric→output pipeline end-to-end early to de-risk integration | ✅ Decided 2026-06-02 |
+| Bus factor = integer, commit-count to ≥50% of commits; bots/merges excluded, identities normalized; blame-based truck factor deferred to `--deep` | Cheap on full history, deterministic/testable, honest integer; full def in research/METRICS.md | ✅ Decided 2026-06-02 |
+| Bot + identity filtering is shared across `contributor_count`, `top_author_share`, `bus_factor` | Keeps every author-based number in the report internally consistent | ✅ Decided 2026-06-02 |
 
 ## Evolution
 
@@ -80,4 +89,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-02 after initialization*
+*Last updated: 2026-06-02 after brainstorm (full clone, minimal API, no tokio, no rename tracking, walking skeleton)*

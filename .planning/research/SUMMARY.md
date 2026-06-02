@@ -9,13 +9,13 @@
 
 rust-to-you is best treated as a staged investigation pipeline, not a dashboard. The recommended build is: validate one public GitHub URL, collect a mixed remote/local snapshot, compute deterministic section metrics, then render one scrollable Ratatui case file with playful copy layered on top of grounded evidence.
 
-The strongest technical shape is a horizontal-layer architecture because that is the chosen project mode: intake and validation first, collection second, analyzers third, presentation fourth, and calibration/polish fifth. The biggest risks are incomplete git history, GitHub API rate limits, and vibe heuristics drifting away from evidence.
+The strongest technical shape is a horizontal-layer architecture because that is the chosen project mode: intake and validation first, collection second, analyzers third, presentation fourth, and calibration/polish fifth. The biggest risks are slow full-history passes on large repos (the local clone is full, so completeness is not the problem — bounding cost is) and vibe heuristics drifting away from evidence.
 
 ## Key Findings
 
 ### Recommended Stack
 
-The core stack should stay close to the original vision: `clap` for command parsing, `git2` for repository archaeology, `reqwest` plus `tokio` for GitHub metadata, and `ratatui` with `crossterm` for the report UI. Supporting libraries (`serde`, `serde_json`, `chrono`) round out API modeling, JSON handling, and date-based metrics.
+The core stack should stay close to the original vision: `clap` for command parsing, `git2` for repository archaeology, `reqwest` (blocking) for the single GitHub metadata call, and `ratatui` with `crossterm` for the report UI. Supporting libraries (`serde`, `serde_json`, `chrono`) round out API modeling, JSON handling, and date-based metrics. No async runtime (`tokio`) in V1 — the pipeline is sequential and the API surface is one request.
 
 **Core technologies:**
 - `clap` 4.6.1: CLI contract and validation — ideal for a single-command tool
@@ -47,14 +47,14 @@ The project should be built as four functional layers plus a calibration pass: i
 
 **Major components:**
 1. CLI intake — validates URL and starts an investigation session
-2. Collection services — fetch metadata, clone shallowly, scan files, enumerate branches
+2. Collection services — fetch minimal API metadata (stars/forks/description), full-clone the repo, scan files, enumerate branches and history via git2
 3. Analyzer suite — computes section metrics, findings, and verdict inputs
 4. Report/TUI layer — renders one scrollable case file from a prepared view model
 
 ### Critical Pitfalls
 
-1. **Incomplete history from shallow clones** — decide upfront which metrics can be estimated and label them clearly
-2. **GitHub rate limits** — centralize remote calls and keep public API usage intentional
+1. **Expensive full-history passes** — full clone gives complete history, so bound costly walks (e.g. cap commits for most-modified-file) and label estimated metrics clearly
+2. **GitHub rate limits** — minimized by design (one call for stars/forks/description); still surface limit/network errors cleanly
 3. **Ungrounded vibes** — require evidence bullets for every classification and finding
 4. **Pretty-but-fragile TUI** — optimize for reading flow and narrow terminals, not screenshots only
 
@@ -70,8 +70,8 @@ Based on research, suggested phase structure:
 
 ### Phase 2: Collection Layer
 **Rationale:** Every section depends on reliable data acquisition.
-**Delivers:** GitHub metadata client, shallow clone flow, branch enumeration, and filesystem scanning.
-**Uses:** `reqwest`, `tokio`, `git2`, `chrono`.
+**Delivers:** Walking skeleton (clone→metric→print), minimal GitHub metadata client, full clone flow, branch/history enumeration, and filesystem scanning.
+**Uses:** `reqwest` (blocking), `git2`, `chrono`.
 **Implements:** Data-collection components.
 
 ### Phase 3: Analysis Layer
@@ -100,7 +100,7 @@ Based on research, suggested phase structure:
 
 Phases likely needing deeper research during planning:
 - **Phase 2:** Branch/history acquisition details for large repos and rate-limit handling
-- **Phase 5:** Bus factor heuristic definition and vibe-calibration rules
+- **Phase 5:** Bus factor heuristic definition (vibe ruleset now specced in research/VIBES.md; remaining work is calibrating its thresholds against sample repos)
 
 Phases with standard patterns (skip research-phase):
 - **Phase 1:** CLI validation and guardrails are straightforward
@@ -119,9 +119,9 @@ Phases with standard patterns (skip research-phase):
 
 ### Gaps to Address
 
-- Bus factor formula should be defined as an explicit estimate before implementation.
-- "Most modified file" and "oldest file" behavior around renames should be documented or intentionally simplified.
-- Large-repo handling thresholds should be decided during phase planning.
+- RESOLVED: bus factor is now defined in `research/METRICS.md` as a deterministic integer metric (commit-count, >=50%, bots/merges excluded, identities normalized).
+- RESOLVED: renames are intentionally NOT tracked in V1; "most modified file" and "oldest file" use simple path-based history.
+- Large-repo handling thresholds (commit caps for expensive passes) should be decided during phase planning.
 
 ## Sources
 

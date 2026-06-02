@@ -6,22 +6,22 @@
 
 ## Critical Pitfalls
 
-### Pitfall 1: Shallow clone blind spots
+### Pitfall 1: Expensive full-history passes
 
 **What goes wrong:**
-Branch, file-age, or most-modified-file metrics become misleading because the local clone does not contain enough history.
+V1 does a full clone (correct — archaeology needs complete history), but naive analyzers walk every commit and diff every file, making investigations slow on large/long-lived repos (e.g. axum/tokio with 10k+ commits).
 
 **Why it happens:**
-Teams optimize for speed first, then accidentally compute archaeology metrics from incomplete data.
+"Most modified file," bus factor, and contributor stats are tempting to compute by diffing the entire history with no bound.
 
 **How to avoid:**
-Define which sections are allowed to use shallow history, and label estimated metrics clearly when deeper history is not fetched.
+Keep the full clone for completeness, but bound the expensive passes — e.g. cap commits scanned for most-modified-file and label the result ("based on last N commits"). Do cheap single-pass aggregation where possible.
 
 **Warning signs:**
-Metrics change wildly between repeated runs, or "oldest" and "most modified" results look suspiciously recent.
+Investigations take many seconds on big repos; the most-modified-file pass dominates runtime.
 
 **Phase to address:**
-Phase 2: Collection Layer
+Phase 2: Collection Layer / Phase 3: Analysis Layer
 
 ---
 
@@ -31,13 +31,13 @@ Phase 2: Collection Layer
 Public unauthenticated requests hit REST rate limits and investigations fail unpredictably.
 
 **Why it happens:**
-Branch pagination, contributors, commits, and repo metadata all seem cheap until they stack up.
+Historically, branch pagination, contributors, commits, and repo metadata stack up. In this design that risk is largely removed: V1 makes a single API call (stars/forks/description) and pulls everything else from the local clone via git2.
 
 **How to avoid:**
-Centralize GitHub requests, cap concurrent calls, surface rate-limit errors cleanly, and make the data-collection plan explicit.
+Keep the API surface to the one metadata call, route it through a single client, and surface limit/network errors cleanly. Do not add per-branch or per-commit API calls — git2 covers those locally.
 
 **Warning signs:**
-HTTP 403/429 responses or intermittent failures on branch-heavy repositories.
+Any new code path issuing more than one GitHub request per investigation; HTTP 403/429 responses.
 
 **Phase to address:**
 Phase 2: Collection Layer
@@ -112,7 +112,7 @@ Phase 1: Intake & Boundaries
 | Integration | Common Mistake | Correct Approach |
 |-------------|----------------|------------------|
 | GitHub REST | Treating every public call as "free" | Track rate-limit impact and paginate intentionally |
-| `git2` clone/fetch | Assuming default clone settings are good for archaeology | Make depth and branch behavior explicit in collection code |
+| `git2` clone/fetch | Assuming default clone settings are good for archaeology | Use a full clone for complete history; bound expensive history walks rather than limiting clone depth |
 | Terminal UI | Assuming terminal size is generous | Test narrow terminals and preserve scroll state |
 
 ## Performance Traps
@@ -144,7 +144,7 @@ Phase 1: Intake & Boundaries
 - [ ] **First Impressions:** Verify contributor and activity figures are sourced consistently.
 - [ ] **Commit Crimes:** Verify bus factor is labeled as an estimate if heuristic-based.
 - [ ] **Branch Jungle:** Verify stale vs active branch rules use explicit time thresholds.
-- [ ] **Ancient Relics:** Verify file-history logic handles renames or documents that it does not.
+- [ ] **Ancient Relics:** Confirm file-history logic uses path-based history and does NOT track renames (by design in V1).
 - [ ] **Language Soup:** Verify percentages sum correctly and ASCII bars align with values.
 - [ ] **Repository Vibes:** Verify every label has evidence bullets.
 
@@ -152,7 +152,7 @@ Phase 1: Intake & Boundaries
 
 | Pitfall | Recovery Cost | Recovery Steps |
 |---------|---------------|----------------|
-| Shallow clone blind spots | MEDIUM | Add targeted deeper fetches for affected metrics and label changed behavior in release notes |
+| Expensive full-history passes | MEDIUM | Add commit caps to the slow passes, label affected metrics as estimates, and cache intermediate facts |
 | Rate-limit failures | LOW | Retry after reset window, reduce concurrency, and fail gracefully with clear messaging |
 | Weak vibe heuristics | LOW | Re-rank evidence weights and add fixture repos for calibration |
 
@@ -160,7 +160,7 @@ Phase 1: Intake & Boundaries
 
 | Pitfall | Prevention Phase | Verification |
 |---------|------------------|--------------|
-| Shallow clone blind spots | Phase 2 | Fixture repos produce stable archaeology metrics |
+| Expensive full-history passes | Phase 2 / Phase 3 | Investigations stay fast on large fixture repos; slow passes are bounded |
 | GitHub rate-limit pain | Phase 2 | Repeated public runs fail gracefully under limit pressure |
 | Heuristic comedy without evidence | Phase 5 | Each vibe/finding shows supporting bullets |
 | TUI pretty but not readable | Phase 4 | Narrow-terminal manual checks pass |
