@@ -13,7 +13,7 @@ rust-to-you moves from a strict public-GitHub intake contract to a layered inves
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Intake & Guardrails** - Lock the single-command contract and V1 boundaries.
+- [x] **Phase 1: Intake & Guardrails** - Lock the single-command contract and V1 boundaries.
 - [ ] **Phase 2: Collection Layer** - Build GitHub, git, and filesystem data acquisition.
 - [ ] **Phase 3: Analysis Layer** - Compute the report metrics that power the core sections.
 - [ ] **Phase 4: Presentation Layer** - Render the investigation as a cute scrollable TUI.
@@ -36,11 +36,11 @@ Decimal phases appear between their surrounding integers in numeric order.
 Plans:
 **Wave 1**
 
-- [ ] 01-01-PLAN.md — Scaffold Cargo project; clap CLI surface, generous URL parser to RepoRef, and the IntakeError taxonomy with tiered exit codes (wave 1)
+- [x] 01-01-PLAN.md — Scaffold Cargo project; clap CLI surface, generous URL parser to RepoRef, and the IntakeError taxonomy with tiered exit codes (wave 1)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 01-02-PLAN.md — InvestigationSession bootstrap, deterministic case_id, and the run() seam that prints the stub line on a read-only success path (wave 2)
+- [x] 01-02-PLAN.md — InvestigationSession bootstrap, deterministic case_id, and the run() seam that prints the stub line on a read-only success path (wave 2)
 
 ### Phase 2: Collection Layer
 
@@ -126,7 +126,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Intake & Guardrails | 0/2 | Not started | - |
+| 1. Intake & Guardrails | 2/2 | Completed | 2026-06-02 |
 | 2. Collection Layer | 0/4 | Not started | - |
 | 3. Analysis Layer | 0/3 | Not started | - |
 | 4. Presentation Layer | 0/2 | Not started | - |
