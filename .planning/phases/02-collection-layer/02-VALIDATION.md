@@ -2,7 +2,7 @@
 phase: 2
 slug: collection-layer
 status: draft
-nyquist_compliant: false
+nyquist_compliant: true
 wave_0_complete: false
 created: 2026-06-02
 ---
@@ -81,4 +81,4 @@ created: 2026-06-02
 - [ ] Feedback latency < 10s
 - [ ] `nyquist_compliant: true` set in frontmatter (planner finalizes)
 
-**Approval:** pending
+**Approval:** approved — every task maps to an <automated> cargo test --lib command or a manual-only e2e (02-01 + 02-04 checkpoints); Wave 0 fixtures (make_fixture_repo, github JSON+classify, scan TempDir fixtures) are created as the first task within the plan that needs them.

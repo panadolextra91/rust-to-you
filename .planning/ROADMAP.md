@@ -58,10 +58,18 @@ Plans:
 
 Plans:
 
-- [ ] 02-01: Walking skeleton — full clone a repo, compute repo age, print it to stdout (proves the pipeline + git2 early; throwaway plain-text output)
-- [ ] 02-02: Build GitHub client and metadata models (stars, forks, description/topics only — git2 supplies the rest)
-- [ ] 02-03: Implement full clone and git-history collectors (commits, branches, contributors, file ages; bound expensive passes)
-- [ ] 02-04: Implement filesystem scanners and normalize an investigation snapshot
+**Wave 1**
+
+- [ ] 02-01-PLAN.md — Walking skeleton: add collection deps (git2 vendored-openssl, reqwest blocking, tokei no-default, tempfile, chrono, serde, serde_json), convert to lib+bin crate, RAII-clone a repo, compute repo age, print one line via run() seam [COLL-02]
+
+**Wave 2** *(blocked on Wave 1 — needs the deps + lib target)*
+
+- [ ] 02-02-PLAN.md — GitHub client: blocking GET /repos with mandatory User-Agent + optional GITHUB_TOKEN, RepoMetadata serde model, pure classify(StatusCode) error mapping (404→abort, 403/net→transient) [COLL-01]
+- [ ] 02-03-PLAN.md — git-history collectors: total commits + contributors/bus_factor (shared bot/merge/mailmap filter), branch enumeration via remote refs, bounded most-modified + time-of-day with capped caveat [COLL-01, COLL-02]
+
+**Wave 3** *(blocked on Wave 2 — convergence)*
+
+- [ ] 02-04-PLAN.md — Filesystem scanners (tokei languages + 8 infra footprints) + InvestigationSnapshot normalization + API-first/degrade-on-transient collect() orchestrator wired through run() [COLL-01, COLL-02, COLL-03]
 
 ### Phase 3: Analysis Layer
 
