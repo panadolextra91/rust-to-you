@@ -31,8 +31,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 2 plans
 
 Plans:
-- [ ] 01-01: Define CLI surface, URL parsing, and error taxonomy
-- [ ] 01-02: Implement investigation session bootstrap and read-only guardrails
+- [ ] 01-01-PLAN.md — Scaffold Cargo project; clap CLI surface, generous URL parser to RepoRef, and the IntakeError taxonomy with tiered exit codes (wave 1)
+- [ ] 01-02-PLAN.md — InvestigationSession bootstrap, deterministic case_id, and the run() seam that prints the stub line on a read-only success path (wave 2)
 
 ### Phase 2: Collection Layer
 **Goal**: Collect all remote and local evidence required for the report without over-fetching.
