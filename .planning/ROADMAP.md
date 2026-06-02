@@ -7,6 +7,7 @@ rust-to-you moves from a strict public-GitHub intake contract to a layered inves
 ## Phases
 
 **Phase Numbering:**
+
 - Integer phases (1, 2, 3): Planned milestone work
 - Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
 
@@ -21,77 +22,100 @@ Decimal phases appear between their surrounding integers in numeric order.
 ## Phase Details
 
 ### Phase 1: Intake & Guardrails
+
 **Goal**: Accept one public GitHub URL, reject unsupported cases clearly, and establish the investigation session contract.
 **Depends on**: Nothing (first phase)
 **Requirements**: [INPT-01, INPT-02]
 **Success Criteria** (what must be TRUE):
+
   1. User can start an investigation with `rust-to-you <repo-url>`.
   2. User sees clear errors for invalid, unsupported, or private repository inputs.
   3. The investigation path is explicitly read-only and scoped to GitHub public repos.
-**Plans**: 2 plans
 
+**Plans**: 2 plans
 Plans:
+**Wave 1**
+
 - [ ] 01-01-PLAN.md — Scaffold Cargo project; clap CLI surface, generous URL parser to RepoRef, and the IntakeError taxonomy with tiered exit codes (wave 1)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 01-02-PLAN.md — InvestigationSession bootstrap, deterministic case_id, and the run() seam that prints the stub line on a read-only success path (wave 2)
 
 ### Phase 2: Collection Layer
+
 **Goal**: Collect all remote and local evidence required for the report without over-fetching.
 **Depends on**: Phase 1
 **Requirements**: [COLL-01, COLL-02, COLL-03]
 **Success Criteria** (what must be TRUE):
+
   1. Tool can fetch overview metadata for a public GitHub repository.
   2. Tool can gather branch/history evidence and a local repo snapshot for downstream analyzers.
   3. Tool can detect language and infrastructure signals from repository files and config paths.
   4. A walking skeleton proves the full clone → single-metric → printed-output pipeline runs end-to-end.
+
 **Plans**: 4 plans
 
 Plans:
+
 - [ ] 02-01: Walking skeleton — full clone a repo, compute repo age, print it to stdout (proves the pipeline + git2 early; throwaway plain-text output)
 - [ ] 02-02: Build GitHub client and metadata models (stars, forks, description/topics only — git2 supplies the rest)
 - [ ] 02-03: Implement full clone and git-history collectors (commits, branches, contributors, file ages; bound expensive passes)
 - [ ] 02-04: Implement filesystem scanners and normalize an investigation snapshot
 
 ### Phase 3: Analysis Layer
+
 **Goal**: Turn normalized evidence into report-ready metrics for the core factual sections.
 **Depends on**: Phase 2
 **Requirements**: [ANLY-01, ANLY-02, ANLY-03, ANLY-04, ANLY-05]
 **Success Criteria** (what must be TRUE):
+
   1. Tool computes Commit Crimes, Branch Jungle, and Ancient Relics values from collected evidence.
   2. Tool computes Language Soup percentages and Infrastructure Footprints flags in a reusable form.
   3. Analyzer outputs are deterministic enough to support fixture-based tests.
+
 **Plans**: 3 plans
 
 Plans:
+
 - [ ] 03-01: Build commit and branch analyzers
 - [ ] 03-02: Build archaeology, language, and infrastructure analyzers
 - [ ] 03-03: Assemble section view models for the factual report sections
 
 ### Phase 4: Presentation Layer
+
 **Goal**: Render the investigation as a single scrollable Ratatui report with the desired reading flow.
 **Depends on**: Phase 3
 **Requirements**: [PRES-01, PRES-02]
 **Success Criteria** (what must be TRUE):
+
   1. User can scroll through the full report in one vertical flow without tabs or mode switching.
   2. Header, case metadata, and the nine MVP sections render in a cute but readable layout.
   3. The TUI remains usable on common terminal widths and preserves scroll state cleanly.
+
 **Plans**: 2 plans
 
 Plans:
+
 - [ ] 04-01: Build the report renderer and section widgets
 - [ ] 04-02: Add scrolling, keyboard handling, and terminal-resilience polish
 
 ### Phase 5: Polish & Calibration
+
 **Goal**: Tune the narrative layers and verify the full investigation flow against sample repositories.
 **Depends on**: Phase 4
 **Requirements**: [NARR-01, NARR-02]
 **Success Criteria** (what must be TRUE):
+
   1. Repository Vibes classifications always show evidence bullets that justify the label.
   2. Interesting Findings and Crab Verdict read coherently on real sample repositories.
   3. End-to-end runs produce stable, trustworthy reports for representative public repos.
+
 **Plans**: 2 plans
 **Spec**: Repository Vibes ruleset is defined in `research/VIBES.md` (weighted scoring, MIN_SCORE=4, Chaotic Good fallback) — plan 05-01 implements and calibrates it.
 
 Plans:
+
 - [ ] 05-01: Implement and tune vibe, findings, and verdict heuristics (vibe classifier per research/VIBES.md)
 - [ ] 05-02: Run fixture and manual report verification across sample repositories
 
