@@ -6,6 +6,8 @@
 
 *Ferris phi tới một repository để bạn khỏi phải lọ mọ.*
 
+<img src="https://res.cloudinary.com/duy8dombh/image/upload/v1780487432/ferris_r0xhkh.png" alt="Ferris 🦀" width="360" />
+
 </div>
 
 ---
