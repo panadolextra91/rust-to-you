@@ -113,8 +113,13 @@ Plans:
 
 Plans:
 
-- [ ] 04-01: Build the report renderer and section widgets
-- [ ] 04-02: Add scrolling, keyboard handling, and terminal-resilience polish
+**Wave 1**
+
+- [ ] 04-01-PLAN.md — Add ratatui/crossterm deps + src/tui/ module; pure format helpers (ascii_bar/thousands/dash_or/relative_date), the reusable Section abstraction (D-01), build_report_lines (header + 6 factual sections), and the non-TTY plain renderer — TestBackend + unit tested [PRES-01, PRES-02]
+
+**Wave 2** *(blocked on Wave 1 — needs build_report_lines + plain::render)*
+
+- [ ] 04-02-PLAN.md — TuiState + max_scroll + pure D-03 key handler, the ratatui::run panic-safe scroll/wrap event loop, the IsTerminal TTY-vs-plain branch, and wiring app::run → tui::render (replaces inline printer) [PRES-01, PRES-02]
 
 ### Phase 5: Polish & Calibration
 
