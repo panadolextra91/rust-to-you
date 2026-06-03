@@ -1,7 +1,7 @@
 use crate::cli::RepoRef;
 use crate::github::RepoMetadata;
-use crate::repo::branches::BranchFacts;
-use crate::repo::history::CommitWindow;
+pub use crate::repo::branches::BranchFacts;
+pub use crate::repo::history::CommitWindow;
 
 pub enum RepoMetaState {
     Available(RepoMetadata),
@@ -23,6 +23,7 @@ pub struct HistoryFacts {
     pub top_contributor_name: Option<String>,
     pub oldest_file: Option<String>,
     pub oldest_contributor: Option<String>,
+    pub release_tag_count: usize,
 }
 
 pub struct InfraFootprints {

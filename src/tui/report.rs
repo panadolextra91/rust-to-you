@@ -1,4 +1,5 @@
 use crate::app::session::InvestigationSession;
+use crate::snapshot::InvestigationSnapshot;
 use crate::report::sections::FactualSections;
 use crate::i18n::{bi, two_line, inline_label};
 use crate::tui::section::Section;
@@ -6,7 +7,12 @@ use crate::tui::format::{ascii_bar, thousands, dash_or, relative_date};
 use ratatui::text::{Line, Span};
 use ratatui::style::{Style, Color, Modifier};
 
-pub fn build_report_lines(session: &InvestigationSession, sections: &FactualSections, now_secs: i64) -> Vec<Line<'static>> {
+pub fn build_report_lines(
+    session: &InvestigationSession,
+    snapshot: &InvestigationSnapshot,
+    sections: &FactualSections,
+    now_secs: i64,
+) -> Vec<Line<'static>> {
     let mut lines = Vec::new();
 
     // --- Header ---
@@ -293,6 +299,118 @@ pub fn build_report_lines(session: &InvestigationSession, sections: &FactualSect
         body: s6_body,
     }.into_lines());
 
+    // --- Section 7: Repository Vibes ---
+    let vibe_res = crate::analyze::vibes::classify_vibes(snapshot, sections, now_secs);
+    let s7_title = "🔮 KHÍ CHẤT REPOSITORY";
+    let s7_en = "🔮 REPOSITORY VIBES";
+    let s7_narrative = bi(
+        "Ferris cảm nhận được năng lượng từ repo này...",
+        "Ferris senses the vibes of this repo..."
+    );
+    let s7_narrative_lines = two_line(&s7_narrative);
+    
+    let mut s7_body = vec![
+        Line::from(vec![Span::styled(format!("   {}", s7_en), Style::new().fg(Color::Magenta).add_modifier(Modifier::BOLD))]),
+        Line::from(vec![Span::styled(format!("   {}", s7_narrative_lines[0]), Style::new().add_modifier(Modifier::ITALIC).fg(Color::DarkGray))]),
+        Line::from(vec![Span::styled(format!("   {}", s7_narrative_lines[1]), Style::new().add_modifier(Modifier::ITALIC).fg(Color::DarkGray))]),
+        Line::default(),
+        Line::from(vec![
+            Span::raw(format!("  {}: ", inline_label(&bi("Khí chất chính", "Primary vibe")))),
+            Span::styled(vibe_res.primary.display().vi, Style::new().fg(Color::Magenta).add_modifier(Modifier::BOLD))
+        ]),
+        Line::default(),
+        Line::from(vec![Span::styled(format!("  {}", inline_label(&bi("Bằng chứng", "Evidence"))), Style::new().add_modifier(Modifier::BOLD))]),
+    ];
+    
+    for bullet in &vibe_res.evidence {
+        s7_body.push(Line::from(vec![
+            Span::raw("   • "),
+            Span::raw(inline_label(bullet))
+        ]));
+    }
+    
+    lines.extend(Section {
+        title: Line::from(vec![Span::styled(s7_title, Style::new().fg(Color::Magenta).add_modifier(Modifier::BOLD))]),
+        body: s7_body,
+    }.into_lines());
+
+    // --- Section 8: Interesting Findings ---
+    let findings_res = crate::analyze::findings::interesting_findings(snapshot, sections, &vibe_res);
+    let s8_title = "🔎 PHÁT HIỆN THÚ VỊ";
+    let s8_en = "🔎 INTERESTING FINDINGS";
+    let s8_narrative = bi(
+        "Ferris ghi chép lại các chi tiết đáng chú ý...",
+        "Ferris notes down interesting observations..."
+    );
+    let s8_narrative_lines = two_line(&s8_narrative);
+
+    let mut s8_body = vec![
+        Line::from(vec![Span::styled(format!("   {}", s8_en), Style::new().fg(Color::Cyan).add_modifier(Modifier::BOLD))]),
+        Line::from(vec![Span::styled(format!("   {}", s8_narrative_lines[0]), Style::new().add_modifier(Modifier::ITALIC).fg(Color::DarkGray))]),
+        Line::from(vec![Span::styled(format!("   {}", s8_narrative_lines[1]), Style::new().add_modifier(Modifier::ITALIC).fg(Color::DarkGray))]),
+        Line::default(),
+    ];
+
+    for finding in &findings_res {
+        s8_body.push(Line::from(vec![
+            Span::raw("  • "),
+            Span::raw(inline_label(&finding.text))
+        ]));
+    }
+
+    lines.extend(Section {
+        title: Line::from(vec![Span::styled(s8_title, Style::new().fg(Color::Cyan).add_modifier(Modifier::BOLD))]),
+        body: s8_body,
+    }.into_lines());
+
+    // --- Section 9: Crab Verdict ---
+    let verdict_res = crate::analyze::verdict::crab_verdict(snapshot, sections, now_secs);
+    let s9_title = "🦀 PHÁN QUYẾT CỦA FERRIS";
+    let s9_en = "🦀 CRAB VERDICT";
+    let s9_narrative = bi(
+        "Ferris tổng hợp và đưa ra đánh giá cuối cùng...",
+        "Ferris compiles and delivers the final verdict..."
+    );
+    let s9_narrative_lines = two_line(&s9_narrative);
+
+    let mut s9_body = vec![
+        Line::from(vec![Span::styled(format!("   {}", s9_en), Style::new().fg(Color::Red).add_modifier(Modifier::BOLD))]),
+        Line::from(vec![Span::styled(format!("   {}", s9_narrative_lines[0]), Style::new().add_modifier(Modifier::ITALIC).fg(Color::DarkGray))]),
+        Line::from(vec![Span::styled(format!("   {}", s9_narrative_lines[1]), Style::new().add_modifier(Modifier::ITALIC).fg(Color::DarkGray))]),
+        Line::default(),
+        Line::from(vec![
+            Span::raw(format!("  {}: ", inline_label(&bi("Đánh giá chung", "Overall rating")))),
+            Span::styled(verdict_res.overall_label.vi.clone(), Style::new().fg(Color::Yellow).add_modifier(Modifier::BOLD))
+        ]),
+        Line::default(),
+    ];
+
+    if !verdict_res.strengths.is_empty() {
+        s9_body.push(Line::from(vec![Span::styled(format!("  {}", inline_label(&bi("Điểm mạnh", "Strengths"))), Style::new().add_modifier(Modifier::BOLD).fg(Color::Green))]));
+        for s in &verdict_res.strengths {
+            s9_body.push(Line::from(vec![
+                Span::styled("   ✓ ", Style::new().fg(Color::Green).add_modifier(Modifier::BOLD)),
+                Span::raw(inline_label(s))
+            ]));
+        }
+        s9_body.push(Line::default());
+    }
+
+    if !verdict_res.risks.is_empty() {
+        s9_body.push(Line::from(vec![Span::styled(format!("  {}", inline_label(&bi("Rủi ro", "Risks"))), Style::new().add_modifier(Modifier::BOLD).fg(Color::Red))]));
+        for r in &verdict_res.risks {
+            s9_body.push(Line::from(vec![
+                Span::styled("   ⚠ ", Style::new().fg(Color::Red).add_modifier(Modifier::BOLD)),
+                Span::raw(inline_label(r))
+            ]));
+        }
+    }
+
+    lines.extend(Section {
+        title: Line::from(vec![Span::styled(s9_title, Style::new().fg(Color::Red).add_modifier(Modifier::BOLD))]),
+        body: s9_body,
+    }.into_lines());
+
     lines
 }
 
@@ -365,15 +483,61 @@ mod tests {
         }
     }
 
+    fn make_test_snapshot() -> InvestigationSnapshot {
+        use crate::snapshot::{HistoryFacts, FilesystemFacts, InfraFootprints, BranchFacts, RepoMetaState};
+        use crate::repo::history::CommitWindow;
+        
+        InvestigationSnapshot {
+            repo: RepoRef { owner: "owner".to_string(), repo: "repo".to_string() },
+            metadata: RepoMetaState::Unavailable,
+            history: HistoryFacts {
+                total_commits: 500,
+                repo_age_days: 100,
+                contributor_count: 5,
+                bus_factor: 2,
+                top_author_share_pct: 60.0,
+                window: CommitWindow { scanned: 100, capped: false },
+                most_modified_file: Some("main.rs".to_string()),
+                night_pct: 10.0,
+                weekend_pct: 15.0,
+                business_hours_pct: 75.0,
+                commits_this_month: 50,
+                top_contributor_name: Some("Alice".to_string()),
+                oldest_file: Some("lib.rs".to_string()),
+                oldest_contributor: Some("Bob".to_string()),
+                release_tag_count: 5,
+            },
+            branches: BranchFacts {
+                default_branch: "main".to_string(),
+                branches: vec![],
+                last_activity_secs: 1699990000,
+            },
+            filesystem: FilesystemFacts {
+                languages: vec![("Rust".to_string(), 90.0), ("Markdown".to_string(), 10.0)],
+                infra: InfraFootprints {
+                    docker: true,
+                    terraform: false,
+                    github_actions: true,
+                    gitlab_ci: false,
+                    circleci: false,
+                    jenkins: false,
+                    dependabot: true,
+                    renovate: false,
+                },
+            },
+        }
+    }
+
     #[test]
     fn test_report_renders_header_and_sections() {
         let backend = TestBackend::new(80, 100);
         let mut terminal = Terminal::new(backend).unwrap();
         let session = make_test_session();
+        let snapshot = make_test_snapshot();
         let sections = make_test_sections();
         
         terminal.draw(|f| {
-            let lines = build_report_lines(&session, &sections, 1700000000);
+            let lines = build_report_lines(&session, &snapshot, &sections, 1700000000);
             let p = Paragraph::new(lines).wrap(Wrap { trim: false });
             f.render_widget(p, f.area());
         }).unwrap();
@@ -414,6 +578,9 @@ mod tests {
             "🏺 CỔ VẬT VÔ GIÁ",
             "🌿 SÚP NGÔN NGỮ",
             "⚙️ DẤU VẾT HẠ TẦNG",
+            "🔮 KHÍ CHẤT REPOSITORY",
+            "🔎 PHÁT HIỆN THÚ VỊ",
+            "🦀 PHÁN QUYẾT CỦA FERRIS",
         ];
 
         let mut current_idx = 0;
@@ -435,16 +602,29 @@ mod tests {
             current_idx = title_row.unwrap() + 1;
             found_titles += 1;
         }
-        assert_eq!(found_titles, 6);
+        assert_eq!(found_titles, 9);
 
-        // Negative check: no vibes/findings/verdict placeholders
+        // Confirm Section 7-9 English titles are present in the buffer
+        let mut found_vibe = false;
+        let mut found_findings = false;
+        let mut found_verdict = false;
         for y in 0..buffer.area().height {
             let mut line_str = String::new();
             for x in 0..buffer.area().width {
                 line_str.push_str(buffer[(x, y)].symbol());
             }
-            assert!(!line_str.contains("Vibes") && !line_str.contains("Crab Verdict") && !line_str.contains("Findings"), 
-                "Found placeholder at row {}: {}", y, line_str);
+            if line_str.contains("REPOSITORY VIBES") {
+                found_vibe = true;
+            }
+            if line_str.contains("INTERESTING FINDINGS") {
+                found_findings = true;
+            }
+            if line_str.contains("CRAB VERDICT") {
+                found_verdict = true;
+            }
         }
+        assert!(found_vibe, "Vibes title should be present");
+        assert!(found_findings, "Findings title should be present");
+        assert!(found_verdict, "Verdict title should be present");
     }
 }

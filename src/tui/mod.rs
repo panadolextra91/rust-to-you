@@ -1,4 +1,5 @@
 use crate::app::session::InvestigationSession;
+use crate::snapshot::InvestigationSnapshot;
 use crate::report::sections::FactualSections;
 use std::io::IsTerminal;
 
@@ -8,10 +9,10 @@ pub mod report;
 pub mod plain;
 pub mod app;
 
-pub fn render(session: &InvestigationSession, sections: &FactualSections, now_secs: i64) -> std::io::Result<()> {
+pub fn render(session: &InvestigationSession, snapshot: &InvestigationSnapshot, sections: &FactualSections, now_secs: i64) -> std::io::Result<()> {
     if std::io::stdout().is_terminal() {
-        app::render_tui(session, sections, now_secs)
+        app::render_tui(session, snapshot, sections, now_secs)
     } else {
-        plain::render(&mut std::io::stdout(), session, sections, now_secs)
+        plain::render(&mut std::io::stdout(), session, snapshot, sections, now_secs)
     }
 }

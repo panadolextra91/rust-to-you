@@ -1,5 +1,6 @@
 use crate::app::session::InvestigationSession;
 use crate::report::sections::FactualSections;
+use crate::snapshot::InvestigationSnapshot;
 use crate::tui::report::build_report_lines;
 use ratatui::widgets::{Paragraph, Wrap};
 use crossterm::event::{self, Event, KeyCode, KeyEventKind};
@@ -42,8 +43,8 @@ pub fn handle_key(code: KeyCode, state: &mut TuiState, max: u16, page: u16) {
     }
 }
 
-pub fn render_tui(session: &InvestigationSession, sections: &FactualSections, now_secs: i64) -> io::Result<()> {
-    let lines = build_report_lines(session, sections, now_secs);
+pub fn render_tui(session: &InvestigationSession, snapshot: &InvestigationSnapshot, sections: &FactualSections, now_secs: i64) -> io::Result<()> {
+    let lines = build_report_lines(session, snapshot, sections, now_secs);
     let mut state = TuiState::default();
 
     ratatui::run(|terminal| -> io::Result<()> {
@@ -151,6 +152,45 @@ mod tests {
             case_id: "OWNER-1234".to_string(),
             started_at: std::time::SystemTime::UNIX_EPOCH + std::time::Duration::from_secs(1700000000),
         };
+        let snapshot = InvestigationSnapshot {
+            repo: RepoRef { owner: "owner".to_string(), repo: "repo".to_string() },
+            metadata: crate::snapshot::RepoMetaState::Unavailable,
+            history: crate::snapshot::HistoryFacts {
+                total_commits: 500,
+                repo_age_days: 100,
+                contributor_count: 5,
+                bus_factor: 2,
+                top_author_share_pct: 60.0,
+                window: crate::snapshot::CommitWindow { scanned: 100, capped: false },
+                most_modified_file: Some("main.rs".to_string()),
+                night_pct: 10.0,
+                weekend_pct: 15.0,
+                business_hours_pct: 75.0,
+                commits_this_month: 50,
+                top_contributor_name: Some("Alice".to_string()),
+                oldest_file: Some("lib.rs".to_string()),
+                oldest_contributor: Some("Bob".to_string()),
+                release_tag_count: 5,
+            },
+            branches: crate::snapshot::BranchFacts {
+                default_branch: "main".to_string(),
+                branches: vec![],
+                last_activity_secs: 1699990000,
+            },
+            filesystem: crate::snapshot::FilesystemFacts {
+                languages: vec![("Rust".to_string(), 90.0), ("Markdown".to_string(), 10.0)],
+                infra: crate::snapshot::InfraFootprints {
+                    docker: true,
+                    terraform: false,
+                    github_actions: true,
+                    gitlab_ci: false,
+                    circleci: false,
+                    jenkins: false,
+                    dependabot: true,
+                    renovate: false,
+                },
+            },
+        };
         let sections = crate::report::sections::FactualSections {
             first_impressions: crate::report::sections::FirstImpressions {
                 repo_age_days: 100,
@@ -196,7 +236,7 @@ mod tests {
             },
         };
 
-        let lines = build_report_lines(&session, &sections, 1700000000);
+        let lines = build_report_lines(&session, &snapshot, &sections, 1700000000);
 
         // Render 1 with scroll (0, 0)
         let backend1 = TestBackend::new(80, 10);

@@ -86,6 +86,7 @@ mod tests {
                 top_contributor_name: Some("Alice".to_string()),
                 oldest_file: Some("init.rs".to_string()),
                 oldest_contributor: Some("Bob".to_string()),
+                release_tag_count: 0,
             },
             branches: BranchFacts {
                 default_branch: "develop".to_string(),

@@ -66,3 +66,8 @@ pub fn enumerate_branches(repo: &Repository) -> Result<BranchFacts, git2::Error>
         last_activity_secs,
     })
 }
+
+pub fn release_tag_count(repo: &Repository) -> Result<usize, git2::Error> {
+    let tags = repo.tag_names(None)?;
+    Ok(tags.iter().flatten().count())
+}

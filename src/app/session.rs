@@ -78,7 +78,7 @@ mod tests {
             let suffix = parts[1];
 
             assert!(
-                prefix.len() >= 1 && prefix.len() <= 4,
+                !prefix.is_empty() && prefix.len() <= 4,
                 "prefix '{}' in case_id '{}' must be 1 to 4 characters",
                 prefix,
                 id

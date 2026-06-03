@@ -3,7 +3,7 @@ use crate::error::IntakeError;
 use crate::github::{client::fetch_metadata, GithubError};
 use crate::repo::clone::clone_repo;
 use crate::repo::history::{total_commits, repo_age_days, collect_contributors, collect_bounded, COMMIT_WINDOW_CAP, commits_this_month, oldest_file};
-use crate::repo::branches::enumerate_branches;
+use crate::repo::branches::{enumerate_branches, release_tag_count};
 use crate::scan::lang::language_breakdown;
 use crate::scan::infra::detect_infra;
 use crate::snapshot::{InvestigationSnapshot, RepoMetaState, HistoryFacts, FilesystemFacts};
@@ -42,6 +42,8 @@ pub fn collect(session: &InvestigationSession) -> Result<InvestigationSnapshot, 
         .map_err(|e| IntakeError::CollectionFailed { detail: e.to_string() })?;
     let oldest_file_val = oldest_file(&ws.repo)
         .map_err(|e| IntakeError::CollectionFailed { detail: e.to_string() })?;
+    let tag_count = release_tag_count(&ws.repo)
+        .map_err(|e| IntakeError::CollectionFailed { detail: e.to_string() })?;
 
     let history = HistoryFacts {
         total_commits: total,
@@ -58,6 +60,7 @@ pub fn collect(session: &InvestigationSession) -> Result<InvestigationSnapshot, 
         top_contributor_name: contributors.top_contributor_name,
         oldest_file: oldest_file_val,
         oldest_contributor: contributors.oldest_contributor,
+        release_tag_count: tag_count,
     };
 
     // 4. Scan

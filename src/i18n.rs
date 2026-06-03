@@ -1,3 +1,4 @@
+#[derive(Debug, Clone, PartialEq)]
 pub struct Bilingual {
     pub vi: String,
     pub en: String,

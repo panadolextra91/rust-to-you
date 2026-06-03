@@ -1,10 +1,17 @@
 use crate::app::session::InvestigationSession;
+use crate::snapshot::InvestigationSnapshot;
 use crate::report::sections::FactualSections;
 use crate::i18n::{bi, two_line, inline_label};
 use crate::tui::format::{ascii_bar, thousands, dash_or, relative_date};
 use std::io::Write;
 
-pub fn render<W: Write>(w: &mut W, session: &InvestigationSession, sections: &FactualSections, now_secs: i64) -> std::io::Result<()> {
+pub fn render<W: Write>(
+    w: &mut W,
+    session: &InvestigationSession,
+    snapshot: &InvestigationSnapshot,
+    sections: &FactualSections,
+    now_secs: i64,
+) -> std::io::Result<()> {
     // Header
     writeln!(w, "🦀 rust-to-you")?;
     let sub = two_line(&bi("Báo cáo Điều tra Repository", "Repository Investigation Report"));
@@ -137,6 +144,74 @@ pub fn render<W: Write>(w: &mut W, session: &InvestigationSession, sections: &Fa
     writeln!(w, "  {}: {}", inline_label(&bi("Renovate", "Renovate")), format_bool(infra.renovate))?;
     writeln!(w)?;
 
+    // Section 7: Repository Vibes
+    let vibe_res = crate::analyze::vibes::classify_vibes(snapshot, sections, now_secs);
+    let s7_narrative = bi(
+        "Ferris cảm nhận được năng lượng từ repo này...",
+        "Ferris senses the vibes of this repo..."
+    );
+    let s7_narrative_lines = two_line(&s7_narrative);
+    writeln!(w, "🔮 KHÍ CHẤT REPOSITORY")?;
+    writeln!(w, "   🔮 REPOSITORY VIBES")?;
+    writeln!(w, "   {}", s7_narrative_lines[0])?;
+    writeln!(w, "   {}", s7_narrative_lines[1])?;
+    writeln!(w)?;
+    writeln!(w, "  {}: {}", inline_label(&bi("Khí chất chính", "Primary vibe")), vibe_res.primary.display().vi)?;
+    writeln!(w)?;
+    writeln!(w, "  {}", inline_label(&bi("Bằng chứng", "Evidence")))?;
+    for bullet in &vibe_res.evidence {
+        writeln!(w, "   • {}", inline_label(bullet))?;
+    }
+    writeln!(w)?;
+
+    // Section 8: Interesting Findings
+    let findings_res = crate::analyze::findings::interesting_findings(snapshot, sections, &vibe_res);
+    let s8_narrative = bi(
+        "Ferris ghi chép lại các chi tiết đáng chú ý...",
+        "Ferris notes down interesting observations..."
+    );
+    let s8_narrative_lines = two_line(&s8_narrative);
+    writeln!(w, "🔎 PHÁT HIỆN THÚ VỊ")?;
+    writeln!(w, "   🔎 INTERESTING FINDINGS")?;
+    writeln!(w, "   {}", s8_narrative_lines[0])?;
+    writeln!(w, "   {}", s8_narrative_lines[1])?;
+    writeln!(w)?;
+    for finding in &findings_res {
+        writeln!(w, "  • {}", inline_label(&finding.text))?;
+    }
+    writeln!(w)?;
+
+    // Section 9: Crab Verdict
+    let verdict_res = crate::analyze::verdict::crab_verdict(snapshot, sections, now_secs);
+    let s9_narrative = bi(
+        "Ferris tổng hợp và đưa ra đánh giá cuối cùng...",
+        "Ferris compiles and delivers the final verdict..."
+    );
+    let s9_narrative_lines = two_line(&s9_narrative);
+    writeln!(w, "🦀 PHÁN QUYẾT CỦA FERRIS")?;
+    writeln!(w, "   🦀 CRAB VERDICT")?;
+    writeln!(w, "   {}", s9_narrative_lines[0])?;
+    writeln!(w, "   {}", s9_narrative_lines[1])?;
+    writeln!(w)?;
+    writeln!(w, "  {}: {}", inline_label(&bi("Đánh giá chung", "Overall rating")), verdict_res.overall_label.vi.clone())?;
+    writeln!(w)?;
+
+    if !verdict_res.strengths.is_empty() {
+        writeln!(w, "  {}", inline_label(&bi("Điểm mạnh", "Strengths")))?;
+        for s in &verdict_res.strengths {
+            writeln!(w, "   ✓ {}", inline_label(s))?;
+        }
+        writeln!(w)?;
+    }
+
+    if !verdict_res.risks.is_empty() {
+        writeln!(w, "  {}", inline_label(&bi("Rủi ro", "Risks")))?;
+        for r in &verdict_res.risks {
+            writeln!(w, "   ⚠ {}", inline_label(r))?;
+        }
+        writeln!(w)?;
+    }
+
     Ok(())
 }
 
@@ -155,6 +230,51 @@ mod tests {
             repo: RepoRef { owner: "owner".to_string(), repo: "repo".to_string() },
             case_id: "OWNER-1234".to_string(),
             started_at: std::time::SystemTime::UNIX_EPOCH + std::time::Duration::from_secs(1700000000),
+        }
+    }
+
+    fn make_test_snapshot() -> InvestigationSnapshot {
+        use crate::snapshot::{HistoryFacts, FilesystemFacts, InfraFootprints, BranchFacts, RepoMetaState};
+        use crate::repo::history::CommitWindow;
+        
+        InvestigationSnapshot {
+            repo: RepoRef { owner: "owner".to_string(), repo: "repo".to_string() },
+            metadata: RepoMetaState::Unavailable,
+            history: HistoryFacts {
+                total_commits: 500,
+                repo_age_days: 100,
+                contributor_count: 5,
+                bus_factor: 2,
+                top_author_share_pct: 60.0,
+                window: CommitWindow { scanned: 100, capped: false },
+                most_modified_file: Some("main.rs".to_string()),
+                night_pct: 10.0,
+                weekend_pct: 15.0,
+                business_hours_pct: 75.0,
+                commits_this_month: 50,
+                top_contributor_name: Some("Alice".to_string()),
+                oldest_file: Some("lib.rs".to_string()),
+                oldest_contributor: Some("Bob".to_string()),
+                release_tag_count: 5,
+            },
+            branches: BranchFacts {
+                default_branch: "main".to_string(),
+                branches: vec![],
+                last_activity_secs: 1699990000,
+            },
+            filesystem: FilesystemFacts {
+                languages: vec![("Rust".to_string(), 90.0), ("Markdown".to_string(), 10.0)],
+                infra: InfraFootprints {
+                    docker: true,
+                    terraform: false,
+                    github_actions: true,
+                    gitlab_ci: false,
+                    circleci: false,
+                    jenkins: false,
+                    dependabot: true,
+                    renovate: false,
+                },
+            },
         }
     }
 
@@ -209,10 +329,11 @@ mod tests {
     #[test]
     fn test_plain_render() {
         let session = make_test_session();
+        let snapshot = make_test_snapshot();
         let sections = make_test_sections();
         let mut buf = Vec::new();
         
-        render(&mut buf, &session, &sections, 1700000000).unwrap();
+        render(&mut buf, &session, &snapshot, &sections, 1700000000).unwrap();
         
         let output = String::from_utf8(buf).unwrap();
         
@@ -224,6 +345,11 @@ mod tests {
         assert!(output.contains("ANCIENT RELICS"));
         assert!(output.contains("LANGUAGE SOUP"));
         assert!(output.contains("INFRASTRUCTURE FOOTPRINTS"));
+        
+        // Assert Section 7-9 titles
+        assert!(output.contains("REPOSITORY VIBES"));
+        assert!(output.contains("INTERESTING FINDINGS"));
+        assert!(output.contains("CRAB VERDICT"));
         
         // Assert no ANSI escapes
         assert!(!output.contains("\x1b["));

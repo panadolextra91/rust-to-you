@@ -59,6 +59,7 @@ mod tests {
                 top_contributor_name: None,
                 oldest_file,
                 oldest_contributor,
+                release_tag_count: 0,
             },
             branches: BranchFacts {
                 default_branch: "main".to_string(),

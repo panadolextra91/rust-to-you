@@ -14,7 +14,7 @@ pub fn run(session: &InvestigationSession) -> Result<(), IntakeError> {
         Ok(snapshot) => {
             let now_secs = chrono::Utc::now().timestamp();
             let sections = crate::report::sections::build_factual_sections(&snapshot, now_secs);
-            crate::tui::render(session, &sections, now_secs).map_err(|e| {
+            crate::tui::render(session, &snapshot, &sections, now_secs).map_err(|e| {
                 IntakeError::CollectionFailed { detail: format!("Failed to render report: {:?}", e) }
             })
         }

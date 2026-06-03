@@ -43,6 +43,7 @@ mod tests {
             top_contributor_name: Some("Alice".to_string()),
             oldest_file: None,
             oldest_contributor: None,
+            release_tag_count: 0,
         };
         
         let snapshot = InvestigationSnapshot {
