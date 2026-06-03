@@ -137,8 +137,13 @@ Plans:
 
 Plans:
 
-- [ ] 05-01: Implement and tune vibe, findings, and verdict heuristics (vibe classifier per research/VIBES.md)
-- [ ] 05-02: Run fixture and manual report verification across sample repositories
+**Wave 1**
+
+- [ ] 05-01-PLAN.md — Enrich snapshot with release_tag_count (git2 tag_names), implement vibes/findings/verdict pure analyzers (VIBES.md exactly), and render bilingual+Ferris Sections 7-9 via the Section abstraction in report.rs + plain.rs (update the negative assert) [NARR-01, NARR-02]
+
+**Wave 2** *(blocked on Wave 1 — needs the analyzers + thresholds)*
+
+- [ ] 05-02-PLAN.md — Calibration & end-to-end verification: deterministic fixtures for every vibe/finding/verdict rule + manual real-repo spot-check (solo / tokio / dormant / corporate) + tune thresholds and write changes back into VIBES.md [NARR-01, NARR-02]
 
 ## Progress
 
