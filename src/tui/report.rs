@@ -133,7 +133,7 @@ pub fn build_report_lines(
     }.into_lines());
 
     // --- Section 3: Branch Jungle ---
-    let s3_title = "🔥 RỪNG RẬM NHÁNH";
+    let s3_title = "🔥 RỪNG RẬM UM TÙM";
     let s3_en = "🔥 BRANCH JUNGLE";
     let s3_narrative = bi(
         "Ferris lạc vào mê cung các nhánh của repo này...",
@@ -574,7 +574,7 @@ mod tests {
         let titles = vec![
             "🌱 BÁO CÁO BAN ĐẦU",
             "☠️ TỘI ÁC COMMIT",
-            "🔥 RỪNG RẬM NHÁNH",
+            "🔥 RỪNG RẬM UM TÙM",
             "🏺 CỔ VẬT VÔ GIÁ",
             "🌿 SÚP NGÔN NGỮ",
             "⚙️ DẤU VẾT HẠ TẦNG",

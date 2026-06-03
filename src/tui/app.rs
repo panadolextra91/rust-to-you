@@ -3,7 +3,7 @@ use crate::report::sections::FactualSections;
 use crate::snapshot::InvestigationSnapshot;
 use crate::tui::report::build_report_lines;
 use ratatui::widgets::{Paragraph, Wrap};
-use crossterm::event::{self, Event, KeyCode, KeyEventKind};
+use crossterm::event::{self, Event, KeyCode, KeyEventKind, MouseEventKind};
 use std::io;
 
 #[derive(Debug, Default)]
@@ -43,11 +43,28 @@ pub fn handle_key(code: KeyCode, state: &mut TuiState, max: u16, page: u16) {
     }
 }
 
+/// Lines scrolled per mouse-wheel / trackpad notch.
+pub const SCROLL_STEP: u16 = 3;
+
+pub fn handle_mouse(kind: MouseEventKind, state: &mut TuiState, max: u16) {
+    match kind {
+        MouseEventKind::ScrollDown => {
+            state.offset = (state.offset + SCROLL_STEP).min(max);
+        }
+        MouseEventKind::ScrollUp => {
+            state.offset = state.offset.saturating_sub(SCROLL_STEP);
+        }
+        _ => {}
+    }
+}
+
 pub fn render_tui(session: &InvestigationSession, snapshot: &InvestigationSnapshot, sections: &FactualSections, now_secs: i64) -> io::Result<()> {
     let lines = build_report_lines(session, snapshot, sections, now_secs);
     let mut state = TuiState::default();
 
     ratatui::run(|terminal| -> io::Result<()> {
+        // Enable mouse capture so trackpad / wheel scroll reaches us.
+        crossterm::execute!(io::stdout(), crossterm::event::EnableMouseCapture)?;
         loop {
             terminal.draw(|frame| {
                 let area = frame.area();
@@ -61,21 +78,26 @@ pub fn render_tui(session: &InvestigationSession, snapshot: &InvestigationSnapsh
                 frame.render_widget(paragraph, area);
             })?;
 
+            let page = terminal.size()?.height;
+            let max = max_scroll(lines.len(), page);
             match event::read()? {
                 Event::Key(key) => {
                     if key.kind == KeyEventKind::Press {
-                        let page = terminal.size()?.height;
-                        let max = max_scroll(lines.len(), page);
                         handle_key(key.code, &mut state, max, page);
-                        if state.quit {
-                            break;
-                        }
                     }
+                }
+                Event::Mouse(m) => {
+                    handle_mouse(m.kind, &mut state, max);
                 }
                 Event::Resize(..) => {}
                 _ => {}
             }
+            if state.quit {
+                break;
+            }
         }
+        // Best-effort: turn mouse capture back off before ratatui restores the screen.
+        let _ = crossterm::execute!(io::stdout(), crossterm::event::DisableMouseCapture);
         Ok(())
     })?;
 
@@ -139,6 +161,30 @@ mod tests {
         state.quit = false;
         handle_key(KeyCode::Esc, &mut state, max, page);
         assert!(state.quit);
+    }
+
+    #[test]
+    fn test_handle_mouse() {
+        let mut state = TuiState::default();
+        let max = 50;
+
+        // Scroll down by SCROLL_STEP per notch
+        handle_mouse(MouseEventKind::ScrollDown, &mut state, max);
+        assert_eq!(state.offset, SCROLL_STEP);
+        handle_mouse(MouseEventKind::ScrollDown, &mut state, max);
+        assert_eq!(state.offset, SCROLL_STEP * 2);
+
+        // Scroll up (saturating at 0)
+        handle_mouse(MouseEventKind::ScrollUp, &mut state, max);
+        assert_eq!(state.offset, SCROLL_STEP);
+        handle_mouse(MouseEventKind::ScrollUp, &mut state, max);
+        handle_mouse(MouseEventKind::ScrollUp, &mut state, max);
+        assert_eq!(state.offset, 0);
+
+        // Clamp to max
+        state.offset = max - 1;
+        handle_mouse(MouseEventKind::ScrollDown, &mut state, max);
+        assert_eq!(state.offset, max);
     }
 
     #[test]

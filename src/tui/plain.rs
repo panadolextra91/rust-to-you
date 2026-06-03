@@ -71,7 +71,7 @@ pub fn render<W: Write>(
     );
     let s3_narrative_lines = two_line(&s3_narrative);
     let bj = &sections.branch_jungle;
-    writeln!(w, "🔥 RỪNG RẬM NHÁNH")?;
+    writeln!(w, "🔥 RỪNG RẬM UM TÙM")?;
     writeln!(w, "   🔥 BRANCH JUNGLE")?;
     writeln!(w, "   {}", s3_narrative_lines[0])?;
     writeln!(w, "   {}", s3_narrative_lines[1])?;
