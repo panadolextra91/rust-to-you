@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Intake & Guardrails** - Lock the single-command contract and V1 boundaries.
 - [x] **Phase 2: Collection Layer** - Build GitHub, git, and filesystem data acquisition.
 - [x] **Phase 3: Analysis Layer** - Compute the report metrics that power the core sections.
-- [ ] **Phase 4: Presentation Layer** - Render the investigation as a cute scrollable TUI.
+- [x] **Phase 4: Presentation Layer** - Render the investigation as a cute scrollable TUI.
 - [ ] **Phase 5: Polish & Calibration** - Tune vibes, findings, and end-to-end report quality.
 
 ## Phase Details
@@ -115,11 +115,11 @@ Plans:
 
 **Wave 1**
 
-- [ ] 04-01-PLAN.md — Add ratatui/crossterm deps + src/tui/ module; pure format helpers (ascii_bar/thousands/dash_or/relative_date), the reusable Section abstraction (D-01), build_report_lines (header + 6 factual sections), and the non-TTY plain renderer — TestBackend + unit tested [PRES-01, PRES-02]
+- [x] 04-01-PLAN.md — Add ratatui/crossterm deps + src/tui/ module; pure format helpers (ascii_bar/thousands/dash_or/relative_date), the reusable Section abstraction (D-01), build_report_lines (header + 6 factual sections), and the non-TTY plain renderer — TestBackend + unit tested [PRES-01, PRES-02]
 
 **Wave 2** *(blocked on Wave 1 — needs build_report_lines + plain::render)*
 
-- [ ] 04-02-PLAN.md — TuiState + max_scroll + pure D-03 key handler, the ratatui::run panic-safe scroll/wrap event loop, the IsTerminal TTY-vs-plain branch, and wiring app::run → tui::render (replaces inline printer) [PRES-01, PRES-02]
+- [x] 04-02-PLAN.md — TuiState + max_scroll + pure D-03 key handler, the ratatui::run panic-safe scroll/wrap event loop, the IsTerminal TTY-vs-plain branch, and wiring app::run → tui::render (replaces inline printer) [PRES-01, PRES-02]
 
 ### Phase 5: Polish & Calibration
 
@@ -150,5 +150,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 1. Intake & Guardrails | 2/2 | Completed | 2026-06-02 |
 | 2. Collection Layer | 4/4 | Completed | 2026-06-03 |
 | 3. Analysis Layer | 3/3 | Completed | 2026-06-03 |
-| 4. Presentation Layer | 0/2 | Not started | - |
+| 4. Presentation Layer | 2/2 | Completed | 2026-06-03 |
 | 5. Polish & Calibration | 0/2 | Not started | - |
