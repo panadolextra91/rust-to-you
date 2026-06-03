@@ -86,9 +86,17 @@ Plans:
 
 Plans:
 
-- [ ] 03-01: Build commit and branch analyzers
-- [ ] 03-02: Build archaeology, language, and infrastructure analyzers
-- [ ] 03-03: Assemble section view models for the factual report sections
+**Wave 1**
+
+- [ ] 03-01-PLAN.md — Enrich history/branch collectors (commits_this_month rolling-30d, top-contributor display name, STALE_BRANCH_DAYS=90) and emit CommitCrimes + BranchJungle pure-data analyzers [ANLY-01, ANLY-02]
+
+**Wave 2** *(blocked on Wave 1 — shares src/repo/history.rs, src/snapshot.rs, src/app/collect.rs)*
+
+- [ ] 03-02-PLAN.md — Enrich history collector (oldest_file via first-commit-tree∩HEAD, oldest_contributor by earliest first-commit time) and emit AncientRelics + LanguageSoup + InfrastructureFootprints analyzers [ANLY-03, ANLY-04, ANLY-05]
+
+**Wave 3** *(blocked on Waves 1+2 — convergence)*
+
+- [ ] 03-03-PLAN.md — Assemble FirstImpressions + FactualSections pure-data view model bundling all six factual sections for Phase 4 [ANLY-01, ANLY-02, ANLY-03, ANLY-04, ANLY-05]
 
 ### Phase 4: Presentation Layer
 
