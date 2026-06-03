@@ -14,7 +14,7 @@ rust-to-you moves from a strict public-GitHub intake contract to a layered inves
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Intake & Guardrails** - Lock the single-command contract and V1 boundaries.
-- [ ] **Phase 2: Collection Layer** - Build GitHub, git, and filesystem data acquisition.
+- [x] **Phase 2: Collection Layer** - Build GitHub, git, and filesystem data acquisition.
 - [ ] **Phase 3: Analysis Layer** - Compute the report metrics that power the core sections.
 - [ ] **Phase 4: Presentation Layer** - Render the investigation as a cute scrollable TUI.
 - [ ] **Phase 5: Polish & Calibration** - Tune vibes, findings, and end-to-end report quality.
@@ -60,16 +60,16 @@ Plans:
 
 **Wave 1**
 
-- [ ] 02-01-PLAN.md — Walking skeleton: add collection deps (git2 vendored-openssl, reqwest blocking, tokei no-default, tempfile, chrono, serde, serde_json), convert to lib+bin crate, RAII-clone a repo, compute repo age, print one line via run() seam [COLL-02]
+- [x] 02-01-PLAN.md — Walking skeleton: add collection deps (git2 vendored-openssl, reqwest blocking, tokei no-default, tempfile, chrono, serde, serde_json), convert to lib+bin crate, RAII-clone a repo, compute repo age, print one line via run() seam [COLL-02]
 
 **Wave 2** *(blocked on Wave 1 — needs the deps + lib target)*
 
-- [ ] 02-02-PLAN.md — GitHub client: blocking GET /repos with mandatory User-Agent + optional GITHUB_TOKEN, RepoMetadata serde model, pure classify(StatusCode) error mapping (404→abort, 403/net→transient) [COLL-01]
-- [ ] 02-03-PLAN.md — git-history collectors: total commits + contributors/bus_factor (shared bot/merge/mailmap filter), branch enumeration via remote refs, bounded most-modified + time-of-day with capped caveat [COLL-01, COLL-02]
+- [x] 02-02-PLAN.md — GitHub client: blocking GET /repos with mandatory User-Agent + optional GITHUB_TOKEN, RepoMetadata serde model, pure classify(StatusCode) error mapping (404→abort, 403/net→transient) [COLL-01]
+- [x] 02-03-PLAN.md — git-history collectors: total commits + contributors/bus_factor (shared bot/merge/mailmap filter), branch enumeration via remote refs, bounded most-modified + time-of-day with capped caveat [COLL-01, COLL-02]
 
 **Wave 3** *(blocked on Wave 2 — convergence)*
 
-- [ ] 02-04-PLAN.md — Filesystem scanners (tokei languages + 8 infra footprints) + InvestigationSnapshot normalization + API-first/degrade-on-transient collect() orchestrator wired through run() [COLL-01, COLL-02, COLL-03]
+- [x] 02-04-PLAN.md — Filesystem scanners (tokei languages + 8 infra footprints) + InvestigationSnapshot normalization + API-first/degrade-on-transient collect() orchestrator wired through run() [COLL-01, COLL-02, COLL-03]
 
 ### Phase 3: Analysis Layer
 
@@ -135,7 +135,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Intake & Guardrails | 2/2 | Completed | 2026-06-02 |
-| 2. Collection Layer | 0/4 | Not started | - |
+| 2. Collection Layer | 4/4 | Completed | 2026-06-03 |
 | 3. Analysis Layer | 0/3 | Not started | - |
 | 4. Presentation Layer | 0/2 | Not started | - |
 | 5. Polish & Calibration | 0/2 | Not started | - |
