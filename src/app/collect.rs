@@ -19,7 +19,7 @@ pub fn collect(session: &InvestigationSession) -> Result<InvestigationSnapshot, 
             });
         }
         Err(e) => {
-            eprintln!("🦀 Lỗi khi gọi metadata: {:?}. Continuing git-only...", e);
+            eprintln!("🦀 Ferris không gọi được metadata ({:?}) — tiếp tục với git thôi\nFerris could not reach repo metadata, continuing git-only", e);
             RepoMetaState::Unavailable
         }
     };

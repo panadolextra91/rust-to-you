@@ -1,9 +1,11 @@
 pub mod cli;
 pub mod app;
 pub mod error;
+pub mod i18n;
 pub mod repo;
 pub mod github;
 pub mod scan;
 pub mod snapshot;
 pub mod analyze;
 pub mod report;
+pub mod tui;
