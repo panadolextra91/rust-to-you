@@ -71,10 +71,13 @@ Phase 5 (they use the same section abstraction built here). `--json` export → 
   - **Centralize:** build a small i18n/message helper (e.g. a `Bilingual { vi, en }` type +
     render helpers) in `src/tui/` (or a small `src/i18n.rs`) that both the TUI and the plain
     renderer use. Pure + unit-testable.
-  - **Retrofit Phase 1-3:** update the existing Vietnamese-only strings to Ferris + bilingual —
-    `IntakeError` Display (src/error.rs, currently says "mình") and the degrade message in
-    `src/app/collect.rs`. Errors print VI line then EN line to stderr. This is in-scope for
-    Phase 4 (it owns presentation + the i18n helper).
+  - **Retrofit Phase 1-3:** `IntakeError` Display (src/error.rs) is ALREADY Ferris-voiced but
+    **VI-only** → add the **English line** to each variant (bilingual, VI then EN). The degrade
+    message in `src/app/collect.rs` likewise → Ferris + bilingual. Errors print VI line then EN
+    line to stderr (`main.rs` already does `eprintln!("{}", e)`, so the Display impl should embed
+    both lines). In-scope for Phase 4 (it owns presentation + the i18n helper).
+  - **Strengthen the guard:** assert each `IntakeError` variant's Display contains BOTH a VI and
+    an EN line (not just "no 'mình'", which is already trivially true).
 
 ### Claude's Discretion
 - Exact per-section colors + emoji choices (within the expressive style) — implementer's taste, keep readable.
