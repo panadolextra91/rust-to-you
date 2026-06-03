@@ -22,6 +22,9 @@ pub enum IntakeError {
 
     #[error("🦀 Bạn bị giới hạn lượt gọi API rồi. Thử lại sau nha")]
     RateLimited,
+
+    #[error("🦀 Lỗi khi đọc lịch sử git: {detail}")]
+    CollectionFailed { detail: String },
 }
 
 impl IntakeError {
@@ -33,6 +36,7 @@ impl IntakeError {
             | Self::MalformedRepoPath { .. } => 2,
             Self::RepoNotFoundOrPrivate { .. } => 3,
             Self::Network | Self::RateLimited => 4,
+            Self::CollectionFailed { .. } => 5,
         }
     }
 }
