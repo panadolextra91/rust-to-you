@@ -1,64 +1,83 @@
-# rust-to-you 🦀
+<div align="center">
 
-> Ferris rushes to a repository so you don't have to.
+# 🦀 rust-to-you
 
-A playful Rust **CLI/TUI** that investigates a public GitHub repository from one command and
-renders a cute, scrollable, **bilingual (Tiếng Việt + English)** "case file" report — narrated by
-**Ferris**, the Rust crab mascot.
+**🇻🇳 Tiếng Việt** · [🇬🇧 English](README-en.md)
 
-Not repository analytics. Not a git dashboard. This is **repository archaeology & gossip.** 🤣
+*Ferris phi tới một repository để bạn khỏi phải lọ mọ.*
 
-```
+</div>
+
+---
+
+Chào bạn 👋 Mình là **Ferris** — con cua mascot của Rust 🦀
+
+Bạn có bao giờ phải mở cả tá tab GitHub, bấm tới bấm lui chỉ để hiểu một cái repo lạ chưa? Mệt lắm đúng không. Để Ferris lo! Bạn đưa mình **một dòng lệnh**, mình phi tới repo đó, đào bới git history, lục lọi cấu trúc, hạ tầng, rồi kể lại cho bạn nghe dưới dạng một **bản báo cáo điều tra dễ thương** — song ngữ Việt–Anh.
+
+Đây **không phải** dashboard phân tích khô khan đâu nha. Đây là **khảo cổ & buôn chuyện về repository** 🤣
+
+```sh
 rust-to-you tokio-rs/axum
 ```
 
-## What it tells you
+## 🔍 Ferris kể cho bạn nghe gì?
 
-A single scrollable report with 9 sections:
+Một báo cáo cuộn dọc, 9 mục, đọc như hồ sơ vụ án:
 
-1. 🌱 **First Impressions** — age, default branch, stars, forks, contributors, last activity
-2. ☠️ **Commit Crimes** — total commits, commits this month, top contributor, bus factor
-3. 🔥 **Branch Jungle** — total / active / stale / oldest branches
-4. 🏺 **Ancient Relics** — oldest file, most-modified file, oldest contributor, longest-living branch
-5. 🌿 **Language Soup** — language breakdown with ASCII bars
-6. ⚙️ **Infrastructure Footprints** — Docker, Terraform, GitHub Actions, GitLab CI, CircleCI, Jenkins, Dependabot, Renovate
-7. 🔮 **Repository Vibes** — a personality (Solo Wizard 🧙, Ancient Temple 🏛️, …) backed by evidence
-8. 🔎 **Interesting Findings** — gossip-worthy observations
-9. 🦀 **Crab Verdict** — strengths, risks, and Ferris's overall rating
+1. 🌱 **Báo cáo ban đầu** — tuổi repo, nhánh mặc định, sao, fork, người đóng góp, hoạt động gần nhất
+2. ☠️ **Tội ác commit** — tổng commit, commit tháng này, trùm commit, hệ số xe buýt
+3. 🔥 **Rừng rậm um tùm** — tổng / hoạt động / bỏ hoang / nhánh cổ nhất
+4. 🏺 **Cổ vật vô giá** — file cổ nhất, file bị sửa nhiều nhất, người cũ nhất, nhánh lâu đời nhất
+5. 🌿 **Súp ngôn ngữ** — tỉ lệ ngôn ngữ kèm thanh bar
+6. ⚙️ **Dấu vết hạ tầng** — Docker, Terraform, GitHub Actions, GitLab CI, CircleCI, Jenkins, Dependabot, Renovate
+7. 🔮 **Khí chất repository** — Ferris chấm "tính cách" repo (Phù thủy đơn độc 🧙, Đền cổ 🏛️, …) kèm bằng chứng
+8. 🔎 **Phát hiện thú vị** — mấy chuyện đáng buôn
+9. 🦀 **Phán quyết của Ferris** — điểm mạnh, rủi ro, và lời phán cuối cùng
 
-## Install
+## 🚀 Cài đặt nhanh
 
-**Prebuilt binary (no Rust needed):**
+**🍺 Homebrew (gọn nhất cho macOS):**
+```sh
+brew install panadolextra91/tap/rust-to-you
+```
 
+**🐚 Shell — không cần cài Rust (macOS/Linux):**
 ```sh
 curl --proto '=https' --tlsv1.2 -LsSf https://github.com/panadolextra91/rust-to-you/releases/latest/download/rust-to-you-installer.sh | sh
 ```
 
-**With Cargo (compiles locally):**
-
+**📦 Có sẵn Rust thì:**
 ```sh
 cargo install --git https://github.com/panadolextra91/rust-to-you
 ```
 
-## Usage
+## 🎮 Dùng thế nào
 
 ```sh
-rust-to-you owner/repo                  # shorthand
-rust-to-you https://github.com/owner/repo
-rust-to-you owner/repo | less           # plain-text (piped / non-TTY)
+rust-to-you owner/repo                      # gõ gọn
+rust-to-you https://github.com/owner/repo   # hoặc URL đầy đủ
+rust-to-you owner/repo | less              # bản text thuần (khi pipe / không phải terminal)
 ```
 
-In the TUI: scroll with the **trackpad / mouse wheel**, or `↓ ↑ j k PgUp PgDn g G`; quit with `q`.
+Trong giao diện TUI: cuộn bằng **trackpad / lăn chuột**, hoặc phím `↓ ↑ j k PgUp PgDn g G`; thoát bằng `q`.
 
-Set `GITHUB_TOKEN` to raise the API rate limit (optional — only stars/forks use the API; everything
-else comes from a local clone).
+> 💡 Đặt biến môi trường `GITHUB_TOKEN` để nới giới hạn API (không bắt buộc — chỉ sao/fork mới dùng API, còn lại Ferris đọc từ bản clone local).
 
-## How it works
+## 🧠 Ferris làm việc kiểu gì?
 
-`URL → minimal GitHub API metadata + full clone → git2/tokei analysis → InvestigationSnapshot →
-pure section analyzers → ratatui TUI (or plain text when piped)`. Read-only, public repos only.
+Tò mò về cách Ferris điều tra (kiến trúc, luồng dữ liệu, sơ đồ)? Mời bạn đọc 👉 **[ARCHITECTURE.md](ARCHITECTURE.md)** — tài liệu kỹ thuật chi tiết.
 
-## License
+## 🦀 Vài điều Ferris hứa
+- **Chỉ đọc, không đụng chạm** — Ferris không bao giờ sửa repo của bạn.
+- **Chỉ repo GitHub public** (V1).
+- **Riêng tư** — chạy trên máy bạn, clone vào thư mục tạm rồi tự dọn sạch.
 
-Licensed under either of **MIT** ([LICENSE-MIT](LICENSE-MIT)) or **Apache-2.0**
-([LICENSE-APACHE](LICENSE-APACHE)) at your option.
+## 📄 Giấy phép
+
+Chọn một trong hai: **MIT** ([LICENSE-MIT](LICENSE-MIT)) hoặc **Apache-2.0** ([LICENSE-APACHE](LICENSE-APACHE)).
+
+<div align="center">
+
+*Made with 🦀 and a lot of gossip — by Ferris.*
+
+</div>
