@@ -17,7 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Collection Layer** - Build GitHub, git, and filesystem data acquisition.
 - [x] **Phase 3: Analysis Layer** - Compute the report metrics that power the core sections.
 - [x] **Phase 4: Presentation Layer** - Render the investigation as a cute scrollable TUI.
-- [ ] **Phase 5: Polish & Calibration** - Tune vibes, findings, and end-to-end report quality.
+- [x] **Phase 5: Polish & Calibration** - Tune vibes, findings, and end-to-end report quality.
 
 ## Phase Details
 
@@ -139,11 +139,11 @@ Plans:
 
 **Wave 1**
 
-- [ ] 05-01-PLAN.md — Enrich snapshot with release_tag_count (git2 tag_names), implement vibes/findings/verdict pure analyzers (VIBES.md exactly), and render bilingual+Ferris Sections 7-9 via the Section abstraction in report.rs + plain.rs (update the negative assert) [NARR-01, NARR-02]
+- [x] 05-01-PLAN.md — Enrich snapshot with release_tag_count (git2 tag_names), implement vibes/findings/verdict pure analyzers (VIBES.md exactly), and render bilingual+Ferris Sections 7-9 via the Section abstraction in report.rs + plain.rs (update the negative assert) [NARR-01, NARR-02]
 
 **Wave 2** *(blocked on Wave 1 — needs the analyzers + thresholds)*
 
-- [ ] 05-02-PLAN.md — Calibration & end-to-end verification: deterministic fixtures for every vibe/finding/verdict rule + manual real-repo spot-check (solo / tokio / dormant / corporate) + tune thresholds and write changes back into VIBES.md [NARR-01, NARR-02]
+- [x] 05-02-PLAN.md — Calibration & end-to-end verification: deterministic fixtures for every vibe/finding/verdict rule + manual real-repo spot-check (solo / tokio / dormant / corporate) + tune thresholds and write changes back into VIBES.md [NARR-01, NARR-02]
 
 ## Progress
 
@@ -156,4 +156,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 2. Collection Layer | 4/4 | Completed | 2026-06-03 |
 | 3. Analysis Layer | 3/3 | Completed | 2026-06-03 |
 | 4. Presentation Layer | 2/2 | Completed | 2026-06-03 |
-| 5. Polish & Calibration | 0/2 | Not started | - |
+| 5. Polish & Calibration | 2/2 | Completed | 2026-06-03 |
