@@ -59,8 +59,27 @@ Phase 5 (they use the same section abstraction built here). `--json` export → 
   Report", repository `owner/repo`, investigation date, **Case ID** (`InvestigationSession.case_id`).
   Sections render in **fixed top-to-bottom order** (no tabs/multi-screen).
 
+### Bilingual + Ferris Voice (cross-cutting — NEW)
+- **D-08:** All user-facing text is narrated by **Ferris** (Rust crab mascot 🦀) and is
+  **bilingual Vietnamese + English**. Specifics:
+  - **Voice:** Ferris NEVER says "tôi/mình" — always third-person "Ferris" (both VI and EN).
+    Example error: `🦀 Ferris chỉ hóng repo GitHub thôi — {host} chưa có trong danh sách khách mời`
+    then `Ferris can only visit public GitHub repos`.
+  - **Rendering (balanced):** errors, status messages, **section titles**, and narrative render
+    as **two lines** (Vietnamese line, then English line). Dense **data-row labels** render
+    bilingually **inline** (e.g. `Tổng commit / Total commits: 12,442`) to keep the report compact.
+  - **Centralize:** build a small i18n/message helper (e.g. a `Bilingual { vi, en }` type +
+    render helpers) in `src/tui/` (or a small `src/i18n.rs`) that both the TUI and the plain
+    renderer use. Pure + unit-testable.
+  - **Retrofit Phase 1-3:** update the existing Vietnamese-only strings to Ferris + bilingual —
+    `IntakeError` Display (src/error.rs, currently says "mình") and the degrade message in
+    `src/app/collect.rs`. Errors print VI line then EN line to stderr. This is in-scope for
+    Phase 4 (it owns presentation + the i18n helper).
+
 ### Claude's Discretion
 - Exact per-section colors + emoji choices (within the expressive style) — implementer's taste, keep readable.
+- Exact English copy for each string (keep Ferris's playful gossip tone in both languages).
+- Whether the i18n helper lives in `src/tui/` or a top-level `src/i18n.rs`.
 - Event-loop tick rate / input-handling details.
 - TUI testing approach — prefer unit-testing the **pure format/layout helpers** (bars, relative
   dates, number formatting) + a `ratatui::TestBackend` buffer smoke test; the interactive loop is

@@ -51,6 +51,8 @@ Given one public GitHub repository URL, produce a cute, readable TUI investigati
 - **Presentation**: One scrollable vertical report — no tabs, no multi-screen flows, no dashboard sprawl.
 - **Safety**: Read-only investigation — the tool must never mutate the remote repository.
 - **Tone**: Cute and playful output — the crab identity is part of the product value, not garnish.
+- **Narrator/voice**: All user-facing text is narrated by **Ferris** (the Rust crab mascot 🦀). Ferris NEVER refers to itself as "tôi/mình" — always speaks of itself in the third person as "Ferris".
+- **Bilingual**: All user-facing text (errors, status, section titles, narrative) is **Vietnamese + English**. Messages/errors/section-titles/narrative render as two lines (Vietnamese line, then English line); dense data-row labels render bilingually inline (e.g. "Tổng commit / Total commits: 12,442").
 - **Architecture**: Horizontal-layer roadmap — implementation should be planned by technical layers because that is the chosen project structure mode.
 
 ## Key Decisions
@@ -69,6 +71,8 @@ Given one public GitHub repository URL, produce a cute, readable TUI investigati
 | Ancient Relics does not track file renames in V1 | Rename-following is tricky and redundant for the playful report; keep it simple | ✅ Decided 2026-06-02 |
 | Add a walking-skeleton plan first in Phase 2 | Prove the clone→metric→output pipeline end-to-end early to de-risk integration | ✅ Decided 2026-06-02 |
 | Bus factor = integer, commit-count to ≥50% of commits; bots/merges excluded, identities normalized; blame-based truck factor deferred to `--deep` | Cheap on full history, deterministic/testable, honest integer; full def in research/METRICS.md | ✅ Decided 2026-06-02 |
+| Narrator is **Ferris** (Rust mascot); never "tôi/mình", always third-person "Ferris" | Gives the tool a consistent on-brand personality (Rust + crab) | ✅ Decided 2026-06-03 |
+| All user-facing text is **bilingual VI+EN** — two lines (VI then EN) for messages/errors/titles/narrative; inline "VI / EN" for dense data labels. Retrofit Phase 1-3 strings too | One playful, accessible voice in both languages; centralized in Phase 4's i18n helper | ✅ Decided 2026-06-03 |
 | Bot + identity filtering is shared across `contributor_count`, `top_author_share`, `bus_factor` | Keeps every author-based number in the report internally consistent | ✅ Decided 2026-06-02 |
 
 ## Evolution
