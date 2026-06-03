@@ -1,7 +1,15 @@
 [package]
 name = "rust-to-you"
-version = "0.1.0"
+version = "1.1.0"
 edition = "2021"
+description = "🦀 Ferris rushes to a GitHub repo so you don't have to — a playful bilingual (VI+EN) CLI/TUI repository investigation report."
+repository = "https://github.com/panadolextra91/rust-to-you"
+homepage = "https://github.com/panadolextra91/rust-to-you"
+license = "MIT OR Apache-2.0"
+authors = ["panadolextra91"]
+readme = "README.md"
+keywords = ["github", "git", "cli", "tui", "repository"]
+categories = ["command-line-utilities", "visualization"]
 
 [[bin]]
 name = "rust-to-you"
@@ -19,3 +27,26 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 ratatui = "0.30"
 crossterm = "0.29"
+
+# Config for 'dist'
+[workspace.metadata.dist]
+# The preferred dist version to use in CI (Cargo.toml SemVer syntax)
+cargo-dist-version = "0.32.0"
+# CI backends to support
+ci = "github"
+# The installers to generate for each app
+installers = ["shell", "homebrew"]
+# A GitHub repo to push Homebrew formulas to
+tap = "panadolextra91/homebrew-tap"
+# Publish jobs to run in CI
+publish-jobs = ["homebrew"]
+# Target platforms to build apps for (Rust target-triple syntax)
+targets = ["aarch64-apple-darwin", "x86_64-apple-darwin", "x86_64-unknown-linux-gnu"]
+# Path that installers should place binaries in
+install-path = "CARGO_HOME"
+# Whether to install an updater program
+install-updater = false
+
+[profile.dist]
+inherits = "release"
+lto = "thin"
