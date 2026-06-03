@@ -1,5 +1,7 @@
 use git2::{Repository, BranchType};
 
+pub const STALE_BRANCH_DAYS: i64 = 90;
+
 pub struct BranchInfo {
     pub name: String,
     pub tip_time_secs: i64,

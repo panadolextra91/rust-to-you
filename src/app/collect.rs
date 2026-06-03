@@ -2,7 +2,7 @@ use crate::app::session::InvestigationSession;
 use crate::error::IntakeError;
 use crate::github::{client::fetch_metadata, GithubError};
 use crate::repo::clone::clone_repo;
-use crate::repo::history::{total_commits, repo_age_days, collect_contributors, collect_bounded, COMMIT_WINDOW_CAP};
+use crate::repo::history::{total_commits, repo_age_days, collect_contributors, collect_bounded, COMMIT_WINDOW_CAP, commits_this_month, oldest_file};
 use crate::repo::branches::enumerate_branches;
 use crate::scan::lang::language_breakdown;
 use crate::scan::infra::detect_infra;
@@ -38,6 +38,10 @@ pub fn collect(session: &InvestigationSession) -> Result<InvestigationSnapshot, 
         .map_err(|e| IntakeError::CollectionFailed { detail: e.to_string() })?;
     let branches = enumerate_branches(&ws.repo)
         .map_err(|e| IntakeError::CollectionFailed { detail: e.to_string() })?;
+    let commits_this_month = commits_this_month(&ws.repo)
+        .map_err(|e| IntakeError::CollectionFailed { detail: e.to_string() })?;
+    let oldest_file_val = oldest_file(&ws.repo)
+        .map_err(|e| IntakeError::CollectionFailed { detail: e.to_string() })?;
 
     let history = HistoryFacts {
         total_commits: total,
@@ -50,6 +54,10 @@ pub fn collect(session: &InvestigationSession) -> Result<InvestigationSnapshot, 
         night_pct: bounded.night_pct,
         weekend_pct: bounded.weekend_pct,
         business_hours_pct: bounded.business_hours_pct,
+        commits_this_month,
+        top_contributor_name: contributors.top_contributor_name,
+        oldest_file: oldest_file_val,
+        oldest_contributor: contributors.oldest_contributor,
     };
 
     // 4. Scan

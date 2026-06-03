@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Intake & Guardrails** - Lock the single-command contract and V1 boundaries.
 - [x] **Phase 2: Collection Layer** - Build GitHub, git, and filesystem data acquisition.
-- [ ] **Phase 3: Analysis Layer** - Compute the report metrics that power the core sections.
+- [x] **Phase 3: Analysis Layer** - Compute the report metrics that power the core sections.
 - [ ] **Phase 4: Presentation Layer** - Render the investigation as a cute scrollable TUI.
 - [ ] **Phase 5: Polish & Calibration** - Tune vibes, findings, and end-to-end report quality.
 
@@ -88,15 +88,15 @@ Plans:
 
 **Wave 1**
 
-- [ ] 03-01-PLAN.md — Enrich history/branch collectors (commits_this_month rolling-30d, top-contributor display name, STALE_BRANCH_DAYS=90) and emit CommitCrimes + BranchJungle pure-data analyzers [ANLY-01, ANLY-02]
+- [x] 03-01-PLAN.md — Enrich history/branch collectors (commits_this_month rolling-30d, top-contributor display name, STALE_BRANCH_DAYS=90) and emit CommitCrimes + BranchJungle pure-data analyzers [ANLY-01, ANLY-02]
 
 **Wave 2** *(blocked on Wave 1 — shares src/repo/history.rs, src/snapshot.rs, src/app/collect.rs)*
 
-- [ ] 03-02-PLAN.md — Enrich history collector (oldest_file via first-commit-tree∩HEAD, oldest_contributor by earliest first-commit time) and emit AncientRelics + LanguageSoup + InfrastructureFootprints analyzers [ANLY-03, ANLY-04, ANLY-05]
+- [x] 03-02-PLAN.md — Enrich history collector (oldest_file via first-commit-tree∩HEAD, oldest_contributor by earliest first-commit time) and emit AncientRelics + LanguageSoup + InfrastructureFootprints analyzers [ANLY-03, ANLY-04, ANLY-05]
 
 **Wave 3** *(blocked on Waves 1+2 — convergence)*
 
-- [ ] 03-03-PLAN.md — Assemble FirstImpressions + FactualSections pure-data view model bundling all six factual sections for Phase 4 [ANLY-01, ANLY-02, ANLY-03, ANLY-04, ANLY-05]
+- [x] 03-03-PLAN.md — Assemble FirstImpressions + FactualSections pure-data view model bundling all six factual sections for Phase 4 [ANLY-01, ANLY-02, ANLY-03, ANLY-04, ANLY-05]
 
 ### Phase 4: Presentation Layer
 
@@ -144,6 +144,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 |-------|----------------|--------|-----------|
 | 1. Intake & Guardrails | 2/2 | Completed | 2026-06-02 |
 | 2. Collection Layer | 4/4 | Completed | 2026-06-03 |
-| 3. Analysis Layer | 0/3 | Not started | - |
+| 3. Analysis Layer | 3/3 | Completed | 2026-06-03 |
 | 4. Presentation Layer | 0/2 | Not started | - |
 | 5. Polish & Calibration | 0/2 | Not started | - |

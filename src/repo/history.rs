@@ -70,6 +70,8 @@ pub struct ContributorStats {
     pub contributor_count: usize,
     pub bus_factor: usize,
     pub top_author_share_pct: f64,
+    pub top_contributor_name: Option<String>,
+    pub oldest_contributor: Option<String>,
 }
 
 pub fn collect_contributors(repo: &git2::Repository) -> Result<ContributorStats, git2::Error> {
@@ -77,6 +79,8 @@ pub fn collect_contributors(repo: &git2::Repository) -> Result<ContributorStats,
     revwalk.push_head()?;
     
     let mut counts = HashMap::new();
+    let mut names = HashMap::new();
+    let mut min_times = HashMap::new();
     let mut total_filtered = 0;
     
     let mut unfiltered_counts = HashMap::new();
@@ -84,16 +88,47 @@ pub fn collect_contributors(repo: &git2::Repository) -> Result<ContributorStats,
     for oid in revwalk {
         let oid = oid?;
         let commit = repo.find_commit(oid)?;
+        let author = commit.author();
+        let author_time = author.when().seconds();
+        
+        let resolve_name_fn = |auth: &git2::Signature| -> String {
+            if let Ok(mailmap) = repo.mailmap() {
+                if let Ok(resolved) = mailmap.resolve_signature(auth) {
+                    if let Ok(n) = resolved.name() {
+                        if !n.trim().is_empty() {
+                            return n.to_string();
+                        }
+                    }
+                    return resolved.email().unwrap_or("").to_string();
+                }
+            }
+            if let Ok(n) = auth.name() {
+                if !n.trim().is_empty() {
+                    return n.to_string();
+                }
+            }
+            auth.email().unwrap_or("").to_string()
+        };
         
         if is_authored_commit(&commit) {
-            let id = normalized_identity(repo, &commit.author());
-            *counts.entry(id).or_insert(0) += 1;
+            let id = normalized_identity(repo, &author);
+            *counts.entry(id.clone()).or_insert(0) += 1;
             total_filtered += 1;
+            names.entry(id.clone()).or_insert_with(|| resolve_name_fn(&author));
+            let entry_time = min_times.entry(id).or_insert(author_time);
+            if author_time < *entry_time {
+                *entry_time = author_time;
+            }
         }
         
         if commit.parent_count() <= 1 {
-            let id = normalized_identity(repo, &commit.author());
-            *unfiltered_counts.entry(id).or_insert(0) += 1;
+            let id = normalized_identity(repo, &author);
+            *unfiltered_counts.entry(id.clone()).or_insert(0) += 1;
+            names.entry(id.clone()).or_insert_with(|| resolve_name_fn(&author));
+            let entry_time = min_times.entry(id).or_insert(author_time);
+            if author_time < *entry_time {
+                *entry_time = author_time;
+            }
         }
     }
     
@@ -109,6 +144,8 @@ pub fn collect_contributors(repo: &git2::Repository) -> Result<ContributorStats,
             contributor_count: 0,
             bus_factor: 0,
             top_author_share_pct: 0.0,
+            top_contributor_name: None,
+            oldest_contributor: None,
         });
     }
     
@@ -117,6 +154,28 @@ pub fn collect_contributors(repo: &git2::Repository) -> Result<ContributorStats,
     let mut entries: Vec<_> = map.into_iter().collect();
     entries.sort_by(|a, b| b.1.cmp(&a.1).then_with(|| a.0.cmp(&b.0)));
     
+    let top_contributor_name = entries.first().and_then(|(id, _)| names.get(id).cloned());
+    
+    let mut oldest_contributor = None;
+    let mut min_global_time = i64::MAX;
+    for (id, _) in &entries {
+        if let Some(&time) = min_times.get(id) {
+            let name = names.get(id).cloned().unwrap_or_else(|| id.clone());
+            if time < min_global_time {
+                min_global_time = time;
+                oldest_contributor = Some(name);
+            } else if time == min_global_time {
+                if let Some(ref current_oldest) = oldest_contributor {
+                    if name < *current_oldest {
+                        oldest_contributor = Some(name);
+                    }
+                } else {
+                    oldest_contributor = Some(name);
+                }
+            }
+        }
+    }
+    
     let top_count = entries.first().map(|(_, c)| *c).unwrap_or(0);
     let top_author_share_pct = (top_count as f64 / total as f64) * 100.0;
     
@@ -124,9 +183,9 @@ pub fn collect_contributors(repo: &git2::Repository) -> Result<ContributorStats,
     let mut accum = 0;
     let threshold = (total as f64 * 0.5).ceil() as u32;
     
-    for (_, count) in entries {
+    for (_, count) in &entries {
         bus_factor += 1;
-        accum += count;
+        accum += *count;
         if accum >= threshold {
             break;
         }
@@ -136,6 +195,8 @@ pub fn collect_contributors(repo: &git2::Repository) -> Result<ContributorStats,
         contributor_count,
         bus_factor,
         top_author_share_pct,
+        top_contributor_name,
+        oldest_contributor,
     })
 }
 
@@ -226,6 +287,76 @@ pub fn collect_bounded(repo: &git2::Repository, cap: usize) -> Result<BoundedHis
         business_hours_pct,
         window: CommitWindow { scanned, capped },
     })
+}
+
+pub fn commits_within_days(repo: &Repository, now_secs: i64, days: i64) -> Result<usize, git2::Error> {
+    let mut revwalk = repo.revwalk()?;
+    revwalk.push_head()?;
+    
+    let cutoff = now_secs - days * 86400;
+    let mut count = 0;
+    
+    for oid in revwalk {
+        let oid = oid?;
+        let commit = repo.find_commit(oid)?;
+        if is_authored_commit(&commit) {
+            let author_time = commit.author().when().seconds();
+            if author_time >= cutoff {
+                count += 1;
+            }
+        }
+    }
+    Ok(count)
+}
+
+pub fn commits_this_month(repo: &Repository) -> Result<usize, git2::Error> {
+    commits_within_days(repo, chrono::Utc::now().timestamp(), 30)
+}
+
+pub fn oldest_file(repo: &Repository) -> Result<Option<String>, git2::Error> {
+    let head = match repo.head() {
+        Ok(head) => head,
+        Err(_) => return Ok(None),
+    };
+    let head_tree = head.peel_to_tree()?;
+
+    let mut revwalk = repo.revwalk()?;
+    revwalk.push_head()?;
+    revwalk.set_sorting(Sort::TIME | Sort::REVERSE)?;
+
+    let first_commit_oid = match revwalk.next() {
+        Some(Ok(oid)) => oid,
+        Some(Err(e)) => return Err(e),
+        None => return Ok(None),
+    };
+    
+    let first_commit = repo.find_commit(first_commit_oid)?;
+    let first_tree = first_commit.tree()?;
+    
+    let mut first_paths = std::collections::BTreeSet::new();
+    first_tree.walk(git2::TreeWalkMode::PreOrder, |root, entry| {
+        if let Ok(name) = entry.name() {
+            if entry.kind() == Some(git2::ObjectType::Blob) {
+                let path = format!("{}{}", root, name);
+                first_paths.insert(path);
+            }
+        }
+        git2::TreeWalkResult::Ok
+    })?;
+
+    let mut head_paths = std::collections::BTreeSet::new();
+    head_tree.walk(git2::TreeWalkMode::PreOrder, |root, entry| {
+        if let Ok(name) = entry.name() {
+            if entry.kind() == Some(git2::ObjectType::Blob) {
+                let path = format!("{}{}", root, name);
+                head_paths.insert(path);
+            }
+        }
+        git2::TreeWalkResult::Ok
+    })?;
+    
+    let intersection: std::collections::BTreeSet<_> = first_paths.intersection(&head_paths).cloned().collect();
+    Ok(intersection.into_iter().next())
 }
 
 #[cfg(test)]
@@ -332,12 +463,12 @@ mod tests {
         let bounded = collect_bounded(&repo, 10).unwrap();
         assert_eq!(bounded.most_modified_file.as_deref(), Some("hot.rs"));
         assert_eq!(bounded.window.scanned, 5);
-        assert_eq!(bounded.window.capped, false);
+        assert!(!bounded.window.capped);
         
         let bounded2 = collect_bounded(&repo, 2).unwrap();
         assert_eq!(bounded2.most_modified_file.as_deref(), Some("hot.rs")); 
         assert_eq!(bounded2.window.scanned, 2);
-        assert_eq!(bounded2.window.capped, true);
+        assert!(bounded2.window.capped);
     }
     
     #[test]
@@ -389,5 +520,47 @@ mod tests {
         assert_eq!(stats.night_pct, 50.0);
         assert_eq!(stats.weekend_pct, 50.0);
         assert_eq!(stats.business_hours_pct, 25.0);
+    }
+
+    #[test]
+    fn test_commits_within_days() {
+        let tmp = make_fixture_repo();
+        let repo = Repository::open(tmp.path()).unwrap();
+        let time1 = 1000000000;
+        let now_secs = time1 + 4 * 86400 + 1;
+        let count = commits_within_days(&repo, now_secs, 30).unwrap();
+        assert_eq!(count, 3);
+    }
+
+    #[test]
+    fn test_top_contributor_name() {
+        let tmp = make_fixture_repo();
+        let repo = Repository::open(tmp.path()).unwrap();
+        let stats = collect_contributors(&repo).unwrap();
+        assert_eq!(stats.top_contributor_name.as_deref(), Some("Alice"));
+    }
+
+    #[test]
+    fn test_oldest_file() {
+        let tmp = make_fixture_repo();
+        let repo = Repository::open(tmp.path()).unwrap();
+        let oldest = oldest_file(&repo).unwrap();
+        assert_eq!(oldest.as_deref(), Some(".mailmap"));
+    }
+
+    #[test]
+    fn test_oldest_file_empty() {
+        let tmp = tempfile::Builder::new().prefix("empty-").tempdir().unwrap();
+        let repo = Repository::init(tmp.path()).unwrap();
+        let oldest = oldest_file(&repo).unwrap();
+        assert_eq!(oldest, None);
+    }
+
+    #[test]
+    fn test_oldest_contributor() {
+        let tmp = make_fixture_repo();
+        let repo = Repository::open(tmp.path()).unwrap();
+        let stats = collect_contributors(&repo).unwrap();
+        assert_eq!(stats.oldest_contributor.as_deref(), Some("Alice"));
     }
 }

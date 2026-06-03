@@ -5,3 +5,5 @@ pub mod repo;
 pub mod github;
 pub mod scan;
 pub mod snapshot;
+pub mod analyze;
+pub mod report;

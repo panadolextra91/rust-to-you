@@ -19,6 +19,10 @@ pub struct HistoryFacts {
     pub night_pct: f64,
     pub weekend_pct: f64,
     pub business_hours_pct: f64,
+    pub commits_this_month: usize,
+    pub top_contributor_name: Option<String>,
+    pub oldest_file: Option<String>,
+    pub oldest_contributor: Option<String>,
 }
 
 pub struct InfraFootprints {
