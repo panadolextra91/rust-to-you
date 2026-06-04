@@ -157,3 +157,56 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 3. Analysis Layer | 3/3 | Completed | 2026-06-03 |
 | 4. Presentation Layer | 2/2 | Completed | 2026-06-03 |
 | 5. Polish & Calibration | 2/2 | Completed | 2026-06-03 |
+
+---
+
+# Milestone v1.2.0 — Robustness & Safety Hardening
+
+**Goal:** Make rust-to-you safe to point at *any* repository (huge or hostile) and safe to interrupt at any moment — no machine hang, no orphaned temp files, no injection surface.
+
+**Phase numbering:** Continues from v1.0 (last phase = 5). v1.1.0 added no GSD phases, so this milestone starts at **Phase 6**.
+
+## Phases (v1.2.0)
+
+- [ ] **Phase 6: Safe Intake & Pre-flight Guard** - Refuse oversized repos before the clone starts (with a `--deep` opt-in) and harden the intake parser against injection/abuse.
+- [ ] **Phase 7: Interruptible Lifecycle & Temp Hygiene** - Guarantee the clone temp dir is always cleaned up — on Ctrl-C, on crash recovery, and on every exit path.
+
+## Phase Details (v1.2.0)
+
+### Phase 6: Safe Intake & Pre-flight Guard
+
+**Goal**: Before any clone happens, the tool refuses repositories that would hang the machine and rejects malformed/malicious inputs — protecting the user with clear bilingual messaging and an explicit `--deep` escape hatch.
+**Depends on**: Phase 5 (existing intake + collection pipeline)
+**Requirements**: [GUARD-01, GUARD-02, GUARD-03, SEC-01, SEC-02]
+**Success Criteria** (what must be TRUE):
+
+  1. User pointing the tool at a repository larger than the safe size threshold is stopped *before* the clone begins, via the pre-flight GitHub API size check (metadata is already fetched pre-clone in `src/app/collect.rs`) — their machine never starts an oversized clone unexpectedly.
+  2. User sees a clear bilingual (VI+EN), Ferris-narrated message that states the repo is too large, shows its actual size, and explains how to proceed with `--deep`.
+  3. User can pass `--deep` to opt into full analysis of a large repository, accepting the longer runtime.
+  4. User input with an owner/repo segment beginning with `-`, or exceeding GitHub's segment-length limits, is rejected safely at the parser (`src/cli/parse.rs`) before any network or git operation runs.
+  5. The intake threat model is documented and backed by explicit injection/abuse tests that prove malformed inputs cannot reach the git2 / network surfaces.
+
+**Plans**: TBD
+
+### Phase 7: Interruptible Lifecycle & Temp Hygiene
+
+**Goal**: No run — interrupted, crashed, or completed — ever leaves an orphaned clone temp directory on the user's machine.
+**Depends on**: Phase 6
+**Requirements**: [CLEAN-01, CLEAN-02, CLEAN-03]
+**Success Criteria** (what must be TRUE):
+
+  1. User pressing Ctrl-C (SIGINT) or sending SIGTERM mid-run never leaves an orphaned clone temp directory behind — the live `CloneWorkspace`/TempDir (`src/repo/clone.rs`) is cleaned up before the process exits.
+  2. On startup, the tool sweeps away orphaned temp directories left by previously crashed or killed runs, so prior failures self-heal.
+  3. No code path exits the process — including panic/abort — while a clone workspace is alive without first cleaning it up.
+
+**Plans**: TBD
+
+## Progress (v1.2.0)
+
+**Execution Order:**
+Phases execute in numeric order: 6 → 7
+
+| Phase | Plans Complete | Status | Completed |
+|-------|----------------|--------|-----------|
+| 6. Safe Intake & Pre-flight Guard | 0/? | Not started | - |
+| 7. Interruptible Lifecycle & Temp Hygiene | 0/? | Not started | - |
