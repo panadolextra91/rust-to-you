@@ -186,7 +186,18 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
   4. User input with an owner/repo segment beginning with `-`, or exceeding GitHub's segment-length limits, is rejected safely at the parser (`src/cli/parse.rs`) before any network or git operation runs.
   5. The intake threat model is documented and backed by explicit injection/abuse tests that prove malformed inputs cannot reach the git2 / network surfaces.
 
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+
+**Wave 1**
+
+- [ ] 06-01-PLAN.md — Intake contract + parser hardening: RepoTooLarge (exit 6) + UnsafeInput (exit 2) variants, leading-dash + length-cap guards in parse_repo_ref with injection reject table, --deep flag on Args, RepoMetadata.size field [SEC-01, SEC-02, GUARD-02, GUARD-03]
+
+**Wave 2** *(blocked on Wave 1 — needs the error variants + size field + --deep flag)*
+
+- [ ] 06-02-PLAN.md — Pre-flight size guard: pure size_decision helper + MAX_REPO_KB constant + guard branch before clone, --deep threaded via InvestigationSession, fail-open on unknown size [GUARD-01, GUARD-03]
+- [ ] 06-03-PLAN.md — docs/THREAT-MODEL.md: version-controlled intake threat model (STRIDE + no-shell-spawn rationale) backed by the parser injection tests [SEC-02]
 
 ### Phase 7: Interruptible Lifecycle & Temp Hygiene
 
@@ -208,5 +219,5 @@ Phases execute in numeric order: 6 → 7
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 6. Safe Intake & Pre-flight Guard | 0/? | Not started | - |
+| 6. Safe Intake & Pre-flight Guard | 0/3 | Planned | - |
 | 7. Interruptible Lifecycle & Temp Hygiene | 0/? | Not started | - |
