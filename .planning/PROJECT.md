@@ -10,17 +10,32 @@ It is being built for the project owner herself: a fast way to understand an unf
 
 Given one public GitHub repository URL, produce a cute, readable TUI investigation report faster than manually digging through the GitHub UI.
 
+## Current Milestone: v1.2.0 Robustness & Safety Hardening
+
+**Goal:** Make rust-to-you safe to point at *any* repository (huge or hostile) and safe to interrupt at any moment — no machine hang, no orphaned temp files, no injection surface.
+
+**Target features:**
+- Pre-flight size guard via the GitHub API: refuse oversized repos with a clear message, opt in to the long path with `--deep`.
+- Hardened intake parser: block argument-injection (leading `-`), cap owner/repo segment lengths, document the threat model.
+- Interruptible lifecycle: SIGINT/SIGTERM cleanup so a mid-run Ctrl-C never leaks the clone temp dir.
+- Self-healing temp hygiene: startup sweep of orphaned temp dirs from prior crashed runs.
+
 ## Requirements
 
 ### Validated
 
-(None yet — ship to validate)
+- ✓ User can investigate a public GitHub repository with a single command. — v1.0
+- ✓ User gets a scrollable TUI report with the nine MVP sections and crab-flavored presentation. — v1.0
+- ✓ Investigation stays read-only and focused on public GitHub repositories only. — v1.0
 
 ### Active
 
-- [ ] User can investigate a public GitHub repository with a single command.
-- [ ] User gets a scrollable TUI report with the nine MVP sections and crab-flavored presentation.
-- [ ] Investigation stays read-only and focused on public GitHub repositories only.
+<!-- v1.2.0 — Robustness & Safety Hardening. Detailed REQ-IDs in REQUIREMENTS.md -->
+
+- [ ] User is protected from accidentally hanging their machine on an oversized repo.
+- [ ] User can opt into deep analysis of large repos with an explicit `--deep` flag.
+- [ ] User's machine is never left with orphaned temp files, even if the run is interrupted.
+- [ ] User is protected from malicious or malformed repo inputs (injection-hardened intake).
 
 ### Out of Scope
 
@@ -74,6 +89,8 @@ Given one public GitHub repository URL, produce a cute, readable TUI investigati
 | Narrator is **Ferris** (Rust mascot); never "tôi/mình", always third-person "Ferris" | Gives the tool a consistent on-brand personality (Rust + crab) | ✅ Decided 2026-06-03 |
 | All user-facing text is **bilingual VI+EN** — two lines (VI then EN) for messages/errors/titles/narrative; inline "VI / EN" for dense data labels. Retrofit Phase 1-3 strings too | One playful, accessible voice in both languages; centralized in Phase 4's i18n helper | ✅ Decided 2026-06-03 |
 | Bot + identity filtering is shared across `contributor_count`, `top_author_share`, `bus_factor` | Keeps every author-based number in the report internally consistent | ✅ Decided 2026-06-02 |
+| v1.2.0: oversized repos are **refused by default**, with `--deep` to opt into the long path | Refuse-mode bounds clone size and history walks for free; never surprises the user with a machine hang | ✅ Decided 2026-06-04 |
+| v1.2.0: intake security is **tighten + document**, not a new subsystem | `git2` is libgit2 FFI (no shell spawn) so the injection surface is already narrow; charset allowlist exists | ✅ Decided 2026-06-04 |
 
 ## Evolution
 
@@ -93,4 +110,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-02 after brainstorm (full clone, minimal API, no tokio, no rename tracking, walking skeleton)*
+*Last updated: 2026-06-04 after starting milestone v1.2.0 (Robustness & Safety Hardening)*
