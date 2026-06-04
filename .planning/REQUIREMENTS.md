@@ -1,47 +1,43 @@
 # Requirements: rust-to-you
 
-**Defined:** 2026-06-02
+**Defined:** 2026-06-04
+**Milestone:** v1.2.0 — Robustness & Safety Hardening
 **Core Value:** Given one public GitHub repository URL, produce a cute, readable TUI investigation report faster than manually digging through the GitHub UI.
 
-## v1 Requirements
+> v1.0 requirements (INPT / COLL / ANLY / NARR / PRES) shipped and are archived in
+> `.planning/milestones/v1.0-REQUIREMENTS.md`. This file scopes the v1.2.0 milestone.
 
-### Intake
+## v1.2.0 Requirements
 
-- [ ] **INPT-01**: User can run `rust-to-you <repo-url>` against a public GitHub repository and start an investigation from that single command.
-- [ ] **INPT-02**: User gets a clear read-only error when the input URL is invalid, unsupported, private, or otherwise unusable for V1.
+Requirements for the Robustness & Safety Hardening milestone. Each maps to a roadmap phase.
 
-### Collection
+### Guard
 
-- [ ] **COLL-01**: Tool collects repository metadata needed for First Impressions, including age, default branch, stars, forks, contributors, and last activity.
-- [ ] **COLL-02**: Tool gathers enough git and branch evidence to support Commit Crimes, Branch Jungle, and Ancient Relics calculations.
-- [ ] **COLL-03**: Tool inspects repository files and config locations needed for Language Soup and Infrastructure Footprints without mutating the remote repository.
+- [ ] **GUARD-01**: User is blocked (with a warning) before the tool clones a repository larger than a safe size threshold, using a pre-flight check against the GitHub API so their machine never hangs unexpectedly.
+- [ ] **GUARD-02**: User sees a clear bilingual (VI+EN) message stating the repository is too large, showing its actual size, and explaining how to proceed with `--deep`.
+- [ ] **GUARD-03**: User can pass `--deep` to opt into full analysis of a large repository, accepting the longer runtime.
 
-### Analysis
+### Security
 
-- [ ] **ANLY-01**: Tool computes Commit Crimes values for total commits, commits this month, top contributor, and the V1-defined bus factor metric from `research/METRICS.md`.
-- [ ] **ANLY-02**: Tool computes Branch Jungle values for total branches, active branches, stale branches, and oldest branch.
-- [ ] **ANLY-03**: Tool computes Ancient Relics values for oldest file, most modified file, oldest contributor, and longest living branch.
-- [ ] **ANLY-04**: Tool computes Language Soup percentages and renders them as report-ready values with ASCII progress bars.
-- [ ] **ANLY-05**: Tool detects Docker, Terraform, GitHub Actions, GitLab CI, CircleCI, Jenkins, Dependabot, and Renovate signals for Infrastructure Footprints.
+- [ ] **SEC-01**: User's malformed or malicious repo input is rejected safely — owner/repo segments beginning with `-` are blocked and segment lengths are capped to GitHub's limits.
+- [ ] **SEC-02**: The intake threat model is documented and covered by explicit injection/abuse tests.
 
-### Narrative
+### Cleanup
 
-- [ ] **NARR-01**: Tool classifies Repository Vibes from observed repository signals and shows evidence bullets that justify the classification.
-- [ ] **NARR-02**: Tool generates Interesting Findings bullets and a Crab Verdict summary with strengths and risks derived from computed evidence.
+- [ ] **CLEAN-01**: User interrupting a run (Ctrl-C / SIGINT / SIGTERM) never leaves an orphaned clone temp directory behind.
+- [ ] **CLEAN-02**: On startup, the tool sweeps away orphaned temp directories left by previously crashed or killed runs.
+- [ ] **CLEAN-03**: No code path exits the process (or aborts on panic) while a clone workspace is alive without cleaning it up first.
 
-### Presentation
+## Future Requirements
 
-- [ ] **PRES-01**: Tool renders a single scrollable vertical TUI report with header, repository identity, investigation date, case ID, and the nine MVP sections in order.
-- [ ] **PRES-02**: Report styling stays cute and readable in a terminal, including crab iconography, without tabs or multi-screen navigation.
-
-## v2 Requirements
+Deferred to a future release. Tracked but not in the current roadmap.
 
 ### Output & Runtime Modes
 
 - **MODE-01**: User can request `--json` output for machine-readable investigations.
 - **MODE-02**: User can reuse cached investigations for repeat runs.
-- **MODE-03**: User can opt into deeper history analysis when they want slower but richer archaeology.
 - **MODE-04**: User can run an offline mode against already-fetched local data.
+- **GUARD-04** *(deferred)*: `--deep` runs are bounded by a time/commit budget so even an enormous repo cannot hang indefinitely. Deferred — refuse-by-default already bounds the common case.
 
 ### Expanded Coverage
 
@@ -54,40 +50,32 @@
 
 | Feature | Reason |
 |---------|--------|
-| PR analysis | Explicitly excluded from V1 to keep scope on repository-level investigation |
-| Issue analysis | Explicitly excluded from V1 to avoid expanding API surface too early |
-| Security scanning | Not core to the playful read-only report experience |
-| Dependency graph generation | Valuable later, but not required for launch validation |
-| AI-generated architecture review | Too subjective for a grounded V1 report |
-| Authentication/private repos | Public-repo-only launch keeps setup and trust simple |
-| GitLab/Bitbucket support | GitHub-only scope reduces collector complexity |
-| Tabbed or multi-screen TUI | Conflicts with the desired one-scroll report experience |
-| Any write action | V1 must remain read-only |
+| Shallow/blobless clone in default mode | Archaeology metrics need full history; refuse-by-default + `--deep` handles size instead |
+| PR / issue analysis | Still deferred — milestone is hardening, not expanded coverage |
+| Security scanning of target repos | This milestone hardens rust-to-you itself, not the repos it inspects |
+| Auth / private repos / other hosts | Public-GitHub-only scope unchanged from v1.0 |
+| Any write action | Tool remains read-only |
 
 ## Traceability
 
+Populated during roadmap creation. Phase numbering continues from v1.0 (last phase = 5).
+
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INPT-01 | Phase 1 | Pending |
-| INPT-02 | Phase 1 | Pending |
-| COLL-01 | Phase 2 | Pending |
-| COLL-02 | Phase 2 | Pending |
-| COLL-03 | Phase 2 | Pending |
-| ANLY-01 | Phase 3 | Pending |
-| ANLY-02 | Phase 3 | Pending |
-| ANLY-03 | Phase 3 | Pending |
-| ANLY-04 | Phase 3 | Pending |
-| ANLY-05 | Phase 3 | Pending |
-| PRES-01 | Phase 4 | Pending |
-| PRES-02 | Phase 4 | Pending |
-| NARR-01 | Phase 5 | Pending |
-| NARR-02 | Phase 5 | Pending |
+| GUARD-01 | Phase 6 | Pending |
+| GUARD-02 | Phase 6 | Pending |
+| GUARD-03 | Phase 6 | Pending |
+| SEC-01 | Phase 6 | Pending |
+| SEC-02 | Phase 6 | Pending |
+| CLEAN-01 | Phase 7 | Pending |
+| CLEAN-02 | Phase 7 | Pending |
+| CLEAN-03 | Phase 7 | Pending |
 
 **Coverage:**
-- v1 requirements: 14 total
-- Mapped to phases: 14
+- v1.2.0 requirements: 8 total
+- Mapped to phases: 8
 - Unmapped: 0 ✓
 
 ---
-*Requirements defined: 2026-06-02*
-*Last updated: 2026-06-02 after initial definition*
+*Requirements defined: 2026-06-04*
+*Last updated: 2026-06-04 after milestone v1.2.0 definition*
