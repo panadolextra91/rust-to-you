@@ -168,7 +168,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 ## Phases (v1.2.0)
 
-- [ ] **Phase 6: Safe Intake & Pre-flight Guard** - Refuse oversized repos before the clone starts (with a `--deep` opt-in) and harden the intake parser against injection/abuse.
+- [x] **Phase 6: Safe Intake & Pre-flight Guard** - Refuse oversized repos before the clone starts (with a `--deep` opt-in) and harden the intake parser against injection/abuse. (completed 2026-06-05)
 - [ ] **Phase 7: Interruptible Lifecycle & Temp Hygiene** - Guarantee the clone temp dir is always cleaned up — on Ctrl-C, on crash recovery, and on every exit path.
 
 ## Phase Details (v1.2.0)
@@ -192,12 +192,12 @@ Plans:
 
 **Wave 1**
 
-- [ ] 06-01-PLAN.md — Intake contract + parser hardening: RepoTooLarge (exit 6) + UnsafeInput (exit 2) variants, leading-dash + length-cap guards in parse_repo_ref with injection reject table, --deep flag on Args, RepoMetadata.size field [SEC-01, SEC-02, GUARD-02, GUARD-03]
+- [x] 06-01-PLAN.md — Intake contract + parser hardening: RepoTooLarge (exit 6) + UnsafeInput (exit 2) variants, leading-dash + length-cap guards in parse_repo_ref with injection reject table, --deep flag on Args, RepoMetadata.size field [SEC-01, SEC-02, GUARD-02, GUARD-03]
 
 **Wave 2** *(blocked on Wave 1 — needs the error variants + size field + --deep flag)*
 
-- [ ] 06-02-PLAN.md — Pre-flight size guard: pure size_decision helper + MAX_REPO_KB constant + guard branch before clone, --deep threaded via InvestigationSession, fail-open on unknown size [GUARD-01, GUARD-03]
-- [ ] 06-03-PLAN.md — docs/THREAT-MODEL.md: version-controlled intake threat model (STRIDE + no-shell-spawn rationale) backed by the parser injection tests [SEC-02]
+- [x] 06-02-PLAN.md — Pre-flight size guard: pure size_decision helper + MAX_REPO_KB constant + guard branch before clone, --deep threaded via InvestigationSession, fail-open on unknown size [GUARD-01, GUARD-03]
+- [x] 06-03-PLAN.md — docs/THREAT-MODEL.md: version-controlled intake threat model (STRIDE + no-shell-spawn rationale) backed by the parser injection tests [SEC-02]
 
 ### Phase 7: Interruptible Lifecycle & Temp Hygiene
 
@@ -219,5 +219,5 @@ Phases execute in numeric order: 6 → 7
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 6. Safe Intake & Pre-flight Guard | 0/3 | Planned | - |
+| 6. Safe Intake & Pre-flight Guard | 3/3 | Complete    | 2026-06-05 |
 | 7. Interruptible Lifecycle & Temp Hygiene | 0/? | Not started | - |

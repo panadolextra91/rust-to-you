@@ -13,14 +13,14 @@ Requirements for the Robustness & Safety Hardening milestone. Each maps to a roa
 
 ### Guard
 
-- [ ] **GUARD-01**: User is blocked (with a warning) before the tool clones a repository larger than a safe size threshold, using a pre-flight check against the GitHub API so their machine never hangs unexpectedly.
-- [ ] **GUARD-02**: User sees a clear bilingual (VI+EN) message stating the repository is too large, showing its actual size, and explaining how to proceed with `--deep`.
-- [ ] **GUARD-03**: User can pass `--deep` to opt into full analysis of a large repository, accepting the longer runtime.
+- [x] **GUARD-01**: User is blocked (with a warning) before the tool clones a repository larger than a safe size threshold, using a pre-flight check against the GitHub API so their machine never hangs unexpectedly.
+- [x] **GUARD-02**: User sees a clear bilingual (VI+EN) message stating the repository is too large, showing its actual size, and explaining how to proceed with `--deep`.
+- [x] **GUARD-03**: User can pass `--deep` to opt into full analysis of a large repository, accepting the longer runtime.
 
 ### Security
 
-- [ ] **SEC-01**: User's malformed or malicious repo input is rejected safely — owner/repo segments beginning with `-` are blocked and segment lengths are capped to GitHub's limits.
-- [ ] **SEC-02**: The intake threat model is documented and covered by explicit injection/abuse tests.
+- [x] **SEC-01**: User's malformed or malicious repo input is rejected safely — owner/repo segments beginning with `-` are blocked and segment lengths are capped to GitHub's limits.
+- [x] **SEC-02**: The intake threat model is documented and covered by explicit injection/abuse tests.
 
 ### Cleanup
 
@@ -62,16 +62,17 @@ Populated during roadmap creation. Phase numbering continues from v1.0 (last pha
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| GUARD-01 | Phase 6 | Pending |
-| GUARD-02 | Phase 6 | Pending |
-| GUARD-03 | Phase 6 | Pending |
-| SEC-01 | Phase 6 | Pending |
-| SEC-02 | Phase 6 | Pending |
+| GUARD-01 | Phase 6 | Complete |
+| GUARD-02 | Phase 6 | Complete |
+| GUARD-03 | Phase 6 | Complete |
+| SEC-01 | Phase 6 | Complete |
+| SEC-02 | Phase 6 | Complete |
 | CLEAN-01 | Phase 7 | Pending |
 | CLEAN-02 | Phase 7 | Pending |
 | CLEAN-03 | Phase 7 | Pending |
 
 **Coverage:**
+
 - v1.2.0 requirements: 8 total
 - Mapped to phases: 8
 - Unmapped: 0 ✓
