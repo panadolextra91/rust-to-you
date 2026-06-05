@@ -169,7 +169,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 ## Phases (v1.2.0)
 
 - [x] **Phase 6: Safe Intake & Pre-flight Guard** - Refuse oversized repos before the clone starts (with a `--deep` opt-in) and harden the intake parser against injection/abuse. (completed 2026-06-05)
-- [ ] **Phase 7: Interruptible Lifecycle & Temp Hygiene** - Guarantee the clone temp dir is always cleaned up — on Ctrl-C, on crash recovery, and on every exit path.
+- [x] **Phase 7: Interruptible Lifecycle & Temp Hygiene** - Guarantee the clone temp dir is always cleaned up — on Ctrl-C, on crash recovery, and on every exit path. (completed 2026-06-05)
 
 ## Phase Details (v1.2.0)
 
@@ -216,11 +216,11 @@ Plans:
 
 **Wave 1**
 
-- [ ] 07-01-PLAN.md — hygiene module: LIVE_TEMP slot + idempotent cleanup_live_temp + pure age-based sweep_orphans + signal handler (exit 130) + panic hook, all unit-tested; add ctrlc + libc dev-dep [CLEAN-02, CLEAN-03]
+- [x] 07-01-PLAN.md — hygiene module: LIVE_TEMP slot + idempotent cleanup_live_temp + pure age-based sweep_orphans + signal handler (exit 130) + panic hook, all unit-tested; add ctrlc + libc dev-dep [CLEAN-02, CLEAN-03]
 
 **Wave 2** *(blocked on Wave 1 — needs the hygiene API + ctrlc dep)*
 
-- [ ] 07-02-PLAN.md — Wire D-08 (CloneWorkspace register-on-create/clear-on-Drop) + main() panic hook/signal handler/startup sweep with conditional bilingual notice + tests/interrupt.rs SIGINT/SIGTERM integration test (no orphan + exit 130) [CLEAN-01, CLEAN-02, CLEAN-03]
+- [x] 07-02-PLAN.md — Wire D-08 (CloneWorkspace register-on-create/clear-on-Drop) + main() panic hook/signal handler/startup sweep with conditional bilingual notice + tests/interrupt.rs SIGINT/SIGTERM integration test (no orphan + exit 130) [CLEAN-01, CLEAN-02, CLEAN-03]
 
 ## Progress (v1.2.0)
 
@@ -230,4 +230,4 @@ Phases execute in numeric order: 6 → 7
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 6. Safe Intake & Pre-flight Guard | 3/3 | Complete    | 2026-06-05 |
-| 7. Interruptible Lifecycle & Temp Hygiene | 0/2 | Planned     | - |
+| 7. Interruptible Lifecycle & Temp Hygiene | 2/2 | Complete    | 2026-06-05 |

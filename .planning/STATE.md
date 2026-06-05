@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.2.0
 milestone_name: milestone
-status: planning
-stopped_at: Phase 7 context gathered
-last_updated: "2026-06-05T07:41:08.216Z"
-last_activity: 2026-06-05 — Phase 6 closed (UAT 6/0, security 0 open)
+status: milestone-complete
+stopped_at: Milestone v1.2.0 complete (all phases verified + threat-secured) — ready for docs + release
+last_updated: "2026-06-05T08:37:11.615Z"
+last_activity: 2026-06-05
 progress:
   total_phases: 2
-  completed_phases: 1
-  total_plans: 3
-  completed_plans: 3
-  percent: 50
+  completed_phases: 2
+  total_plans: 5
+  completed_plans: 5
+  percent: 100
 ---
 
 # Project State
@@ -21,20 +21,20 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-04)
 
 **Core value:** Given one public GitHub repository URL, produce a cute, readable TUI investigation report faster than manually digging through the GitHub UI.
-**Current focus:** Phase 7: Interruptible Lifecycle & Temp Hygiene
+**Current focus:** Milestone v1.2.0 complete — next: update docs (README ×2, ARCHITECTURE), bump Cargo.toml to 1.2.0, tag & release
 
 ## Current Position
 
-Phase: 7
-Plan: Not started
-Status: Ready to plan Phase 7 (Phase 6 complete — verified + threat-secured)
-Last activity: 2026-06-05 — Phase 6 closed (UAT 6/0, security 0 open)
+Phase: 07 (complete — last phase of v1.2.0)
+Plan: —
+Status: Milestone v1.2.0 100% complete (2 phases: 6 & 7, all verified + threat-secured)
+Last activity: 2026-06-05 — Phase 7 closed (UAT 7/0, security 0 open); milestone v1.2.0 done
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 16 (v1.0 milestone)
+- Total plans completed: 18 (v1.0 milestone)
 - Average duration: 12.5 min (Phase 1 baseline)
 - Total execution time: ~0.4 hours tracked
 
@@ -44,6 +44,7 @@ Last activity: 2026-06-05 — Phase 6 closed (UAT 6/0, security 0 open)
 |-------|-------|-------|----------|
 | 1 | 2 | 25 min | 12.5 min |
 | 06 | 3 | - | - |
+| 07 | 2 | - | - |
 
 **Recent Trend:**
 

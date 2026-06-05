@@ -24,9 +24,9 @@ Requirements for the Robustness & Safety Hardening milestone. Each maps to a roa
 
 ### Cleanup
 
-- [ ] **CLEAN-01**: User interrupting a run (Ctrl-C / SIGINT / SIGTERM) never leaves an orphaned clone temp directory behind.
-- [ ] **CLEAN-02**: On startup, the tool sweeps away orphaned temp directories left by previously crashed or killed runs.
-- [ ] **CLEAN-03**: No code path exits the process (or aborts on panic) while a clone workspace is alive without cleaning it up first.
+- [x] **CLEAN-01**: User interrupting a run (Ctrl-C / SIGINT / SIGTERM) never leaves an orphaned clone temp directory behind.
+- [x] **CLEAN-02**: On startup, the tool sweeps away orphaned temp directories left by previously crashed or killed runs.
+- [x] **CLEAN-03**: No code path exits the process (or aborts on panic) while a clone workspace is alive without cleaning it up first.
 
 ## Future Requirements
 
@@ -67,9 +67,9 @@ Populated during roadmap creation. Phase numbering continues from v1.0 (last pha
 | GUARD-03 | Phase 6 | Complete |
 | SEC-01 | Phase 6 | Complete |
 | SEC-02 | Phase 6 | Complete |
-| CLEAN-01 | Phase 7 | Pending |
-| CLEAN-02 | Phase 7 | Pending |
-| CLEAN-03 | Phase 7 | Pending |
+| CLEAN-01 | Phase 7 | Complete |
+| CLEAN-02 | Phase 7 | Complete |
+| CLEAN-03 | Phase 7 | Complete |
 
 **Coverage:**
 
