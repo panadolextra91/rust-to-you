@@ -58,10 +58,13 @@ cargo install --git https://github.com/panadolextra91/rust-to-you
 ```sh
 rust-to-you owner/repo                      # gõ gọn
 rust-to-you https://github.com/owner/repo   # hoặc URL đầy đủ
+rust-to-you owner/repo --deep               # repo bự (>500MB)? Ferris vẫn đào, chấp nhận chờ lâu
 rust-to-you owner/repo | less              # bản text thuần (khi pipe / không phải terminal)
 ```
 
 Trong giao diện TUI: cuộn bằng **trackpad / lăn chuột**, hoặc phím `↓ ↑ j k PgUp PgDn g G`; thoát bằng `q`.
+
+> 🛡️ **Repo quá to (trên ~500MB)?** Ferris từ chối **trước khi clone** để khỏi treo máy bạn — kèm lời nhắn cho biết repo nặng bao nhiêu và cách dùng `--deep` nếu bạn vẫn muốn đào.
 
 > 💡 Đặt biến môi trường `GITHUB_TOKEN` để nới giới hạn API (không bắt buộc — chỉ sao/fork mới dùng API, còn lại Ferris đọc từ bản clone local).
 
@@ -72,7 +75,8 @@ Tò mò về cách Ferris điều tra (kiến trúc, luồng dữ liệu, sơ đ
 ## 🦀 Vài điều Ferris hứa
 - **Chỉ đọc, không đụng chạm** — Ferris không bao giờ sửa repo của bạn.
 - **Chỉ repo GitHub public** (V1).
-- **Riêng tư** — chạy trên máy bạn, clone vào thư mục tạm rồi tự dọn sạch.
+- **Riêng tư & sạch sẽ** — chạy trên máy bạn, clone vào thư mục tạm rồi tự dọn sạch — **kể cả khi bạn Ctrl-C giữa chừng hoặc máy có trục trặc**. Lần chạy sau, Ferris còn quét dọn luôn mấy thư mục tạm sót lại từ trước.
+- **An toàn từ cổng vào** — input kỳ lạ / không an toàn bị chặn ngay ở parser, trước khi đụng tới mạng hay git. Chi tiết: **[docs/THREAT-MODEL.md](docs/THREAT-MODEL.md)**.
 
 ## 📄 Giấy phép
 

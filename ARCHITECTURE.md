@@ -17,18 +17,23 @@ Technical documentation · README: [🇻🇳 Tiếng Việt](README.md) · [🇬
 report out:
 
 ```
-URL  →  intake/validate  →  collect (API + clone)  →  normalize (snapshot)
+URL  →  intake/validate  →  collect (API + size-guard + clone)  →  normalize (snapshot)
      →  analyze (pure fns)  →  view models  →  render (TUI or plain text)
 ```
 
 Design principles:
 - **Read-only**, public GitHub repos only.
 - **Git-first**: a full local clone (via `git2`) is the source of truth; the GitHub API is used
-  for exactly one call (stars / forks / description).
+  for exactly one call (stars / forks / description / **size**).
 - **Pure analyzers**: every metric is a pure function over a normalized `InvestigationSnapshot`,
   so it is deterministic and unit-testable with synthetic fixtures.
 - **Snapshot is the carrier**: the cloned workspace is dropped after collection; everything
   downstream reads the snapshot only.
+- **Safe & self-cleaning intake**: oversized repos are refused *before* cloning (500 MB
+  pre-flight guard via the API `size` field, `--deep` to override); unsafe input (leading `-`,
+  over-length segments, traversal) is rejected at the parser before any network or git call; and
+  the temp clone is cleaned up on **every** exit path — normal, Ctrl-C/SIGTERM, or panic — with a
+  startup sweep for any strays left by a previous crash. See [docs/THREAT-MODEL.md](docs/THREAT-MODEL.md).
 - **Bilingual by construction**: all user-facing text is VI + EN, narrated by Ferris.
 
 ## 2. Component architecture
@@ -77,14 +82,16 @@ flowchart TB
 ```mermaid
 flowchart LR
     U([repo URL]) --> P{parse_repo_ref}
-    P -->|invalid / unsupported| ERR[IntakeError → stderr<br/>exit 2]
+    P -->|invalid / unsafe / unsupported| ERR[IntakeError → stderr<br/>exit 2]
     P -->|RepoRef| API[GET /repos/owner/repo]
     API -->|404| NF[RepoNotFoundOrPrivate<br/>exit 3]
-    API -->|network / 403| DEG[degrade:<br/>stars/forks = unknown]
-    API -->|ok| META[metadata]
+    API -->|network / 403| DEG[degrade:<br/>size/stars/forks = unknown]
+    API -->|ok| META[metadata + size]
+    META --> GUARD{size > 500MB?}
+    GUARD -->|yes, no --deep| BIG[RepoTooLarge<br/>exit 6]
+    GUARD -->|no, or --deep| CLONE
     DEG --> CLONE
-    META --> CLONE[full clone → temp dir]
-    CLONE --> SNAP[(InvestigationSnapshot)]
+    CLONE[full clone → temp dir] --> SNAP[(InvestigationSnapshot)]
     SNAP --> AN[analyzers: factual + vibes/findings/verdict]
     AN --> VM[view models]
     VM --> T{stdout is a TTY?}
@@ -115,16 +122,17 @@ sequenceDiagram
     else network / rate-limit
         GH-->>CLI: error → degrade (stars/forks unknown)
     else ok
-        GH-->>CLI: stars / forks / description
+        GH-->>CLI: stars / forks / description / size
     end
-    CLI->>Git: clone into temp dir (RAII)
+    CLI->>CLI: size > 500MB and no --deep? → RepoTooLarge (exit 6), never clone
+    CLI->>Git: clone into temp dir (RAII + live-temp registry)
     Git-->>CLI: local repo
     CLI->>An: build InvestigationSnapshot
     An->>An: factual metrics + vibes (VIBES ruleset) + findings + verdict
     An-->>CLI: FactualSections + VibeResult
     CLI->>R: render(session, sections, now)
     R-->>User: scrollable bilingual report (TUI) / plain text
-    Note over CLI,Git: temp workspace dropped + cleaned up on exit
+    Note over CLI,Git: temp workspace cleaned up on every exit — normal Drop,<br/>SIGINT/SIGTERM handler (exit 130), or panic hook; idempotent
 ```
 
 ## 5. Repository Vibes — the classifier
@@ -141,14 +149,14 @@ Section 7 is a **weighted-scoring classifier** (`analyze/vibes.rs`):
 
 ```text
 src/
-├── main.rs            # entrypoint: parse → session → run; maps errors to stderr + exit code
+├── main.rs            # entrypoint: install signal handler + panic hook + startup temp sweep, then parse → session → run
 ├── lib.rs             # module wiring (lib + bin crate)
-├── error.rs           # IntakeError taxonomy + exit codes
+├── error.rs           # IntakeError taxonomy + exit codes (2 input/unsafe · 3 not-found · 4 net · 5 collect · 6 too-large)
 ├── i18n.rs            # Bilingual{vi,en} + two_line / inline_label
-├── cli/               # clap Args + URL parsing → RepoRef
-├── app/               # session, collect orchestration, run() seam
-├── github/            # reqwest blocking client + RepoMetadata + classify(StatusCode)
-├── repo/              # clone (tempfile RAII), history, branches (git2)
+├── cli/               # clap Args (incl. --deep) + URL parsing → RepoRef (rejects leading-dash / over-length)
+├── app/               # session (carries deep), collect orchestration (pre-flight size guard), run() seam
+├── github/            # reqwest blocking client + RepoMetadata (incl. size) + classify(StatusCode)
+├── repo/              # clone (tempfile RAII), hygiene (signal/panic cleanup + orphan sweep), history, branches (git2)
 ├── scan/              # tokei language breakdown + infra footprint detection
 ├── snapshot.rs        # InvestigationSnapshot (normalized data carrier)
 ├── analyze/           # pure analyzers: commit, branch, relics, language, infra, vibes, findings, verdict
@@ -161,6 +169,9 @@ src/
 | Decision | Why |
 |----------|-----|
 | Full clone (not shallow) | Archaeology metrics need complete history; expensive passes are bounded instead |
+| Refuse-by-default size guard (500 MB) + `--deep` | A full clone of a giant repo can hang the machine; refuse pre-flight using the API `size` field, with an explicit opt-in. Hardcoded threshold keeps the surface minimal |
+| Intake hardening at the parser | `git2` is libgit2 FFI (no shell), so the surface is narrow by construction; the parser still rejects leading-dash arg-injection, over-length and traversal *before* any network/git call |
+| Cleanup on every exit path + startup sweep | `std::process::exit` skips `Drop`, so a `ctrlc` handler + panic hook clean the live temp (tracked in a global registry); a 60-min age-based startup sweep self-heals strays from prior crashes |
 | API limited to one call | Git supplies everything else → rate limits are a non-issue |
 | No `tokio` (sync) | A single sequential call needs no async runtime |
 | `reqwest` blocking + `rustls-tls` | Avoids an async stack; portable TLS |
@@ -172,9 +183,14 @@ src/
 
 ## 8. Testing
 
-- **Unit / fixture tests** (`cargo test`): URL parser table, git analyzers against in-memory
-  fixture repos, GitHub status→error mapping, format helpers, vibe/finding/verdict rules, and a
-  ratatui `TestBackend` smoke test for the report.
+- **Unit / fixture tests** (`cargo test`): URL parser table (incl. unsafe-input reject cases), the
+  pure `size_decision` guard, error exit-code + bilingual-message assertions, temp hygiene
+  (age-based `sweep_orphans` over fixtures + idempotent cleanup + panic-hook cleanup), git
+  analyzers against in-memory fixture repos, GitHub status→error mapping, format helpers,
+  vibe/finding/verdict rules, and a ratatui `TestBackend` smoke test for the report.
+- **Integration** (`cargo test --test interrupt -- --ignored`): spawns the binary, interrupts an
+  in-progress clone with SIGINT/SIGTERM, and asserts no orphaned temp dir remains and the process
+  exits 130. Network-gated, hence `#[ignore]` by default.
 - **Manual**: the interactive TUI (scroll/keys, resize) and live clones against real repos.
 
 ---

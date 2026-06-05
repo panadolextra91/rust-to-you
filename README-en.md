@@ -58,10 +58,13 @@ cargo install --git https://github.com/panadolextra91/rust-to-you
 ```sh
 rust-to-you owner/repo                      # shorthand
 rust-to-you https://github.com/owner/repo   # or a full URL
+rust-to-you owner/repo --deep               # huge repo (>500MB)? Ferris digs anyway — expect a longer wait
 rust-to-you owner/repo | less              # plain text (when piped / non-TTY)
 ```
 
 In the TUI: scroll with the **trackpad / mouse wheel**, or `↓ ↑ j k PgUp PgDn g G`; quit with `q`.
+
+> 🛡️ **Repo too large (over ~500MB)?** Ferris refuses it **before the clone starts** so your machine never hangs — with a note telling you the actual size and how to use `--deep` if you really want to dig in.
 
 > 💡 Set `GITHUB_TOKEN` to raise the API rate limit (optional — only stars/forks use the API; everything else comes from a local clone).
 
@@ -72,7 +75,8 @@ Curious about how Ferris runs the investigation (architecture, data flow, diagra
 ## 🦀 A few promises from Ferris
 - **Read-only** — Ferris never modifies your repo.
 - **Public GitHub repos only** (V1).
-- **Private** — runs on your machine, clones into a temp dir, then cleans up after itself.
+- **Private & tidy** — runs on your machine, clones into a temp dir, then cleans up after itself — **even if you Ctrl-C mid-run or things crash**. On the next run, Ferris also sweeps away any stray temp dirs left behind earlier.
+- **Safe at the front door** — strange / unsafe input is rejected right at the parser, before any network or git operation. Details: **[docs/THREAT-MODEL.md](docs/THREAT-MODEL.md)**.
 
 ## 📄 License
 
