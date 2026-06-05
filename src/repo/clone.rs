@@ -2,8 +2,7 @@ use crate::error::IntakeError;
 use crate::cli::RepoRef;
 
 /// A clone workspace that holds the temp dir and the git repository.
-/// WARNING: callers must not std::process::exit() while a CloneWorkspace is alive,
-/// because exit skips the Drop trait and will leak the temp directory.
+/// The lifecycle is managed by hygiene module to ensure cleanup on signal/panic.
 pub struct CloneWorkspace {
     #[allow(dead_code)]
     tmp: tempfile::TempDir,
@@ -17,11 +16,26 @@ pub fn clone_repo(repo_ref: &RepoRef) -> Result<CloneWorkspace, IntakeError> {
         .tempdir()
         .map_err(|_| IntakeError::Network)?;
 
-    let repo = git2::Repository::clone(&url, tmp.path())
-        .map_err(|_| IntakeError::Network)?;
+    crate::repo::hygiene::register_live_temp(tmp.path().to_path_buf());
+
+    // On clone failure we return before constructing CloneWorkspace, so its Drop
+    // never runs — clear the slot here so it doesn't keep a stale path.
+    let repo = match git2::Repository::clone(&url, tmp.path()) {
+        Ok(repo) => repo,
+        Err(_) => {
+            crate::repo::hygiene::clear_live_temp();
+            return Err(IntakeError::Network);
+        }
+    };
 
     Ok(CloneWorkspace {
         tmp,
         repo,
     })
+}
+
+impl Drop for CloneWorkspace {
+    fn drop(&mut self) {
+        crate::repo::hygiene::clear_live_temp();
+    }
 }

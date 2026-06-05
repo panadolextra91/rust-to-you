@@ -27,6 +27,10 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 ratatui = "0.30"
 crossterm = "0.29"
+ctrlc = { version = "3.5", features = ["termination"] }
+
+[dev-dependencies]
+libc = "0.2"
 
 # Config for 'dist'
 [workspace.metadata.dist]
@@ -47,6 +51,7 @@ install-path = "CARGO_HOME"
 # Whether to install an updater program
 install-updater = false
 
+# Must NOT set panic = "abort" so that default unwind Drop behavior runs as backup cleanup
 [profile.dist]
 inherits = "release"
 lto = "thin"
