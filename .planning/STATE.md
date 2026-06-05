@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v1.2.0
 milestone_name: milestone
-status: milestone-complete
-stopped_at: Milestone v1.2.0 complete (all phases verified + threat-secured) — ready for docs + release
-last_updated: "2026-06-05T08:37:11.615Z"
-last_activity: 2026-06-05
+status: Awaiting next milestone
+stopped_at: Phase 7 context gathered
+last_updated: "2026-06-05T14:27:13.522Z"
+last_activity: 2026-06-05 — Milestone v1.2.0 completed and archived
 progress:
   total_phases: 2
   completed_phases: 2
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-06-04)
 
 ## Current Position
 
-Phase: 07 (complete — last phase of v1.2.0)
+Phase: Milestone v1.2.0 complete
 Plan: —
-Status: Milestone v1.2.0 100% complete (2 phases: 6 & 7, all verified + threat-secured)
-Last activity: 2026-06-05 — Phase 7 closed (UAT 7/0, security 0 open); milestone v1.2.0 done
+Status: Awaiting next milestone
+Last activity: 2026-06-05 — Milestone v1.2.0 completed and archived
 
 ## Performance Metrics
 
@@ -90,4 +90,4 @@ Resume file: .planning/phases/07-interruptible-lifecycle-temp-hygiene/07-CONTEXT
 
 ## Operator Next Steps
 
-- Plan Phase 6 with /gsd-plan-phase 6
+- Start the next milestone with /gsd-new-milestone

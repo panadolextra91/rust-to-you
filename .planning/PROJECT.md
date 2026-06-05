@@ -10,15 +10,13 @@ It is being built for the project owner herself: a fast way to understand an unf
 
 Given one public GitHub repository URL, produce a cute, readable TUI investigation report faster than manually digging through the GitHub UI.
 
-## Current Milestone: v1.2.0 Robustness & Safety Hardening
+## Current State
 
-**Goal:** Make rust-to-you safe to point at *any* repository (huge or hostile) and safe to interrupt at any moment — no machine hang, no orphaned temp files, no injection surface.
+**Shipped:** v1.2.0 Robustness & Safety Hardening (2026-06-05) — building on the v1.0 MVP and the v1.1.0 release (both 2026-06-03).
 
-**Target features:**
-- Pre-flight size guard via the GitHub API: refuse oversized repos with a clear message, opt in to the long path with `--deep`.
-- Hardened intake parser: block argument-injection (leading `-`), cap owner/repo segment lengths, document the threat model.
-- Interruptible lifecycle: SIGINT/SIGTERM cleanup so a mid-run Ctrl-C never leaks the clone temp dir.
-- Self-healing temp hygiene: startup sweep of orphaned temp dirs from prior crashed runs.
+rust-to-you is now safe to point at *any* repository (huge or hostile) and safe to interrupt at any moment: oversized repos are refused *before* cloning (500 MB pre-flight guard, `--deep` to override), the intake parser is injection-hardened with a documented threat model (`docs/THREAT-MODEL.md`), and the clone temp dir is cleaned up on every exit path — Ctrl-C / crash / panic (exit 130) — with an age-based startup sweep for strays.
+
+**Next milestone:** TBD — run `/gsd-new-milestone` to define fresh requirements. Deferred candidates carried forward: `--json` output (MODE-01), cached/offline modes (MODE-02/04), PR & issue analysis (EXPD-01/02), private-repo auth + other hosts (EXPD-03/04), and a `--deep` time/commit budget (GUARD-04).
 
 ## Requirements
 
@@ -27,15 +25,14 @@ Given one public GitHub repository URL, produce a cute, readable TUI investigati
 - ✓ User can investigate a public GitHub repository with a single command. — v1.0
 - ✓ User gets a scrollable TUI report with the nine MVP sections and crab-flavored presentation. — v1.0
 - ✓ Investigation stays read-only and focused on public GitHub repositories only. — v1.0
+- ✓ User is protected from accidentally hanging their machine on an oversized repo. — v1.2.0
+- ✓ User can opt into deep analysis of large repos with an explicit `--deep` flag. — v1.2.0
+- ✓ User's machine is never left with orphaned temp files, even if the run is interrupted. — v1.2.0
+- ✓ User is protected from malicious or malformed repo inputs (injection-hardened intake). — v1.2.0
 
 ### Active
 
-<!-- v1.2.0 — Robustness & Safety Hardening. Detailed REQ-IDs in REQUIREMENTS.md -->
-
-- [ ] User is protected from accidentally hanging their machine on an oversized repo.
-- [ ] User can opt into deep analysis of large repos with an explicit `--deep` flag.
-- [ ] User's machine is never left with orphaned temp files, even if the run is interrupted.
-- [ ] User is protected from malicious or malformed repo inputs (injection-hardened intake).
+(None — milestone v1.2.0 shipped. Run `/gsd-new-milestone` to define the next set of requirements.)
 
 ### Out of Scope
 
@@ -74,12 +71,12 @@ Given one public GitHub repository URL, produce a cute, readable TUI investigati
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| V1 supports public GitHub repositories only | Narrow scope keeps repo acquisition, metadata, and rate-limit handling tractable | — Pending |
-| V1 command surface is only `rust-to-you <repo-url>` | Fastest path to a focused first release | — Pending |
-| TUI is a single vertical report | Reading the report should feel like scrolling a case file, not navigating an app | — Pending |
-| Product positioning is "repository archaeology & gossip" | Distinguishes the tool from dashboards and dry analytics | — Pending |
-| V1 is read-only | Prevents surprise side effects and keeps trust high | — Pending |
-| Not in V1: PRs, issues, security scans, dependency graphs, AI architecture review, auth | Protects MVP scope and keeps attention on the core report | — Pending |
+| V1 supports public GitHub repositories only | Narrow scope keeps repo acquisition, metadata, and rate-limit handling tractable | ✅ Shipped v1.0 |
+| V1 command surface is only `rust-to-you <repo-url>` | Fastest path to a focused first release | ✅ Shipped v1.0 |
+| TUI is a single vertical report | Reading the report should feel like scrolling a case file, not navigating an app | ✅ Shipped v1.0 |
+| Product positioning is "repository archaeology & gossip" | Distinguishes the tool from dashboards and dry analytics | ✅ Shipped v1.0 |
+| V1 is read-only | Prevents surprise side effects and keeps trust high | ✅ Shipped v1.0 |
+| Not in V1: PRs, issues, security scans, dependency graphs, AI architecture review, auth | Protects MVP scope and keeps attention on the core report | ✅ Shipped v1.0 |
 | V1 uses a full clone, not a shallow clone | Archaeology sections need complete history; expensive passes are bounded instead | ✅ Decided 2026-06-02 |
 | GitHub API limited to stars/forks/description; git2 supplies everything else | Shrinks API to one call → rate limits stop being a concern | ✅ Decided 2026-06-02 |
 | Drop `tokio`; use `reqwest` blocking | One sequential API call needs no async runtime; simpler for a first Rust project | ✅ Decided 2026-06-02 |
@@ -110,4 +107,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-04 after starting milestone v1.2.0 (Robustness & Safety Hardening)*
+*Last updated: 2026-06-05 after shipping milestone v1.2.0 (Robustness & Safety Hardening)*
