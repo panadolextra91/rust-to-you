@@ -432,6 +432,7 @@ mod tests {
             repo: RepoRef { owner: "owner".to_string(), repo: "repo".to_string() },
             case_id: "OWNER-1234".to_string(),
             started_at: std::time::SystemTime::UNIX_EPOCH + std::time::Duration::from_secs(1700000000),
+            deep: false,
         }
     }
 

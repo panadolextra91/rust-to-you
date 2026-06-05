@@ -12,6 +12,7 @@ pub struct RepoMetadata {
     pub default_branch: String,
     pub pushed_at: Option<String>,
     pub created_at: Option<String>,
+    pub size: u64,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -79,7 +80,8 @@ mod tests {
             "topics": ["rust", "cli"],
             "default_branch": "main",
             "pushed_at": "2023-01-01T00:00:00Z",
-            "created_at": "2022-01-01T00:00:00Z"
+            "created_at": "2022-01-01T00:00:00Z",
+            "size": 1024
         }"#;
 
         let meta: RepoMetadata = serde_json::from_str(json_str).unwrap();
@@ -90,6 +92,7 @@ mod tests {
         assert_eq!(meta.default_branch, "main");
         assert_eq!(meta.pushed_at.as_deref(), Some("2023-01-01T00:00:00Z"));
         assert_eq!(meta.created_at.as_deref(), Some("2022-01-01T00:00:00Z"));
+        assert_eq!(meta.size, 1024);
 
         let json_no_topics = r#"{
             "stargazers_count": 1,
@@ -97,11 +100,13 @@ mod tests {
             "description": "test",
             "default_branch": "master",
             "pushed_at": null,
-            "created_at": null
+            "created_at": null,
+            "size": 0
         }"#;
 
         let meta2: RepoMetadata = serde_json::from_str(json_no_topics).unwrap();
         assert!(meta2.topics.is_empty());
         assert_eq!(meta2.description.as_deref(), Some("test"));
+        assert_eq!(meta2.size, 0);
     }
 }

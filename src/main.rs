@@ -8,7 +8,7 @@ fn main() {
 
     match parse_repo_ref(&args.repo) {
         Ok(repo_ref) => {
-            let session = InvestigationSession::new(repo_ref);
+            let session = InvestigationSession::new(repo_ref, args.deep);
             if let Err(e) = app::run(&session) {
                 eprintln!("{}", e);
                 std::process::exit(e.exit_code());

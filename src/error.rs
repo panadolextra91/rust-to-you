@@ -25,6 +25,12 @@ pub enum IntakeError {
 
     #[error("🦀 Lỗi khi đọc lịch sử git: {detail}\nError reading git history: {detail}")]
     CollectionFailed { detail: String },
+
+    #[error("🦀 Repo này to quá ({size_mb} MB, vượt ngưỡng {threshold_mb} MB), Ferris không đào tự động đâu — chạy lại với --deep nếu bạn chấp nhận chờ lâu\nThis repo is too large ({size_mb} MB, over the {threshold_mb} MB limit). Ferris won't auto-dig — re-run with --deep if you accept the longer wait")]
+    RepoTooLarge { size_mb: u64, threshold_mb: u64 },
+
+    #[error("🦀 Input này kỳ lạ / không an toàn, Ferris không nhận\nThis input looks unsafe — Ferris won't take it")]
+    UnsafeInput { input: String },
 }
 
 impl IntakeError {
@@ -33,10 +39,45 @@ impl IntakeError {
             Self::EmptyInput
             | Self::NotAUrl { .. }
             | Self::UnsupportedHost { .. }
-            | Self::MalformedRepoPath { .. } => 2,
+            | Self::MalformedRepoPath { .. }
+            | Self::UnsafeInput { .. } => 2,
             Self::RepoNotFoundOrPrivate { .. } => 3,
             Self::Network | Self::RateLimited => 4,
             Self::CollectionFailed { .. } => 5,
+            Self::RepoTooLarge { .. } => 6,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_error_exit_codes() {
+        assert_eq!(IntakeError::EmptyInput.exit_code(), 2);
+        assert_eq!(IntakeError::NotAUrl { input: "x".into() }.exit_code(), 2);
+        assert_eq!(IntakeError::UnsupportedHost { host: "x".into() }.exit_code(), 2);
+        assert_eq!(IntakeError::MalformedRepoPath { input: "x".into() }.exit_code(), 2);
+        assert_eq!(IntakeError::UnsafeInput { input: "x".into() }.exit_code(), 2);
+        
+        assert_eq!(IntakeError::RepoNotFoundOrPrivate { owner: "x".into(), repo: "y".into() }.exit_code(), 3);
+        assert_eq!(IntakeError::Network.exit_code(), 4);
+        assert_eq!(IntakeError::RateLimited.exit_code(), 4);
+        assert_eq!(IntakeError::CollectionFailed { detail: "x".into() }.exit_code(), 5);
+        
+        assert_eq!(IntakeError::RepoTooLarge { size_mb: 550, threshold_mb: 500 }.exit_code(), 6);
+    }
+
+    #[test]
+    fn test_repo_too_large_message() {
+        let err = IntakeError::RepoTooLarge { size_mb: 550, threshold_mb: 500 };
+        let msg = err.to_string();
+        assert!(msg.contains("550"));
+        assert!(msg.contains("500"));
+        assert!(msg.contains("--deep"));
+        assert!(msg.contains('\n'));
+        assert!(msg.contains("không đào tự động"));
+        assert!(msg.contains("too large"));
     }
 }

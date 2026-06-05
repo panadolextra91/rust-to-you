@@ -119,6 +119,7 @@ mod tests {
             default_branch: "develop".to_string(),
             pushed_at: None,
             created_at: None,
+            size: 100,
         });
 
         let snapshot = make_test_snapshot(metadata, vec![], 123456789);

@@ -8,6 +8,32 @@ use crate::scan::lang::language_breakdown;
 use crate::scan::infra::detect_infra;
 use crate::snapshot::{InvestigationSnapshot, RepoMetaState, HistoryFacts, FilesystemFacts};
 
+const MAX_REPO_KB: u64 = 500 * 1024;
+
+#[derive(Debug, PartialEq, Eq)]
+pub enum SizeDecision {
+    Proceed,
+    WarnDeep { size_mb: u64 },
+    WarnUnknown,
+    TooLarge { size_mb: u64 },
+}
+
+pub fn size_decision(meta_state: &RepoMetaState, deep: bool) -> SizeDecision {
+    match meta_state {
+        RepoMetaState::Available(m) if m.size > MAX_REPO_KB => {
+            // Round up so a repo just over the limit never displays AS the limit.
+            let size_mb = m.size.div_ceil(1024);
+            if deep {
+                SizeDecision::WarnDeep { size_mb }
+            } else {
+                SizeDecision::TooLarge { size_mb }
+            }
+        }
+        RepoMetaState::Unavailable => SizeDecision::WarnUnknown,
+        _ => SizeDecision::Proceed,
+    }
+}
+
 pub fn collect(session: &InvestigationSession) -> Result<InvestigationSnapshot, IntakeError> {
     // 1. Metadata API-first, abort-on-404, degrade-on-transient
     let meta_state = match fetch_metadata(&session.repo) {
@@ -23,6 +49,30 @@ pub fn collect(session: &InvestigationSession) -> Result<InvestigationSnapshot, 
             RepoMetaState::Unavailable
         }
     };
+
+    // Validate size guard (D-04, D-05)
+    match size_decision(&meta_state, session.deep) {
+        SizeDecision::TooLarge { size_mb } => {
+            return Err(IntakeError::RepoTooLarge { size_mb, threshold_mb: MAX_REPO_KB / 1024 });
+        }
+        SizeDecision::WarnDeep { size_mb } => {
+            let w = crate::i18n::two_line(&crate::i18n::bi(
+                format!("🦀 Repo lớn ({} MB), Ferris vẫn đào vì --deep — sẽ lâu đó", size_mb),
+                format!("Large repo ({} MB) — Ferris digs anyway (--deep); this will take a while", size_mb),
+            ));
+            eprintln!("{}", w[0]);
+            eprintln!("{}", w[1]);
+        }
+        SizeDecision::WarnUnknown => {
+            let w = crate::i18n::two_line(&crate::i18n::bi(
+                "🦀 Không biết kích thước repo, Ferris cứ đào nha",
+                "Unknown repo size — Ferris digs anyway"
+            ));
+            eprintln!("{}", w[0]);
+            eprintln!("{}", w[1]);
+        }
+        SizeDecision::Proceed => {}
+    }
 
     // 2. Clone repo (hard-fail)
     let ws = clone_repo(&session.repo).map_err(|_| IntakeError::Network)?;
@@ -77,4 +127,56 @@ pub fn collect(session: &InvestigationSession) -> Result<InvestigationSnapshot, 
         branches,
         filesystem,
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::github::client::RepoMetadata;
+
+    fn mock_metadata(size_kb: u64) -> RepoMetaState {
+        RepoMetaState::Available(RepoMetadata {
+            stargazers_count: 0,
+            forks_count: 0,
+            description: None,
+            topics: vec![],
+            default_branch: "main".to_string(),
+            pushed_at: None,
+            created_at: None,
+            size: size_kb,
+        })
+    }
+
+    #[test]
+    fn test_size_decision_proceed() {
+        let meta = mock_metadata(100 * 1024);
+        assert_eq!(size_decision(&meta, false), SizeDecision::Proceed);
+        assert_eq!(size_decision(&meta, true), SizeDecision::Proceed);
+    }
+
+    #[test]
+    fn test_size_decision_boundary() {
+        // exactly 500 MB is safe
+        let meta_exact = mock_metadata(500 * 1024);
+        assert_eq!(size_decision(&meta_exact, false), SizeDecision::Proceed);
+
+        // strictly greater than 500 MB triggers TooLarge / WarnDeep;
+        // the displayed size rounds up so it never reads as exactly the limit.
+        let meta_large = mock_metadata(500 * 1024 + 1);
+        assert_eq!(size_decision(&meta_large, false), SizeDecision::TooLarge { size_mb: 501 });
+        assert_eq!(size_decision(&meta_large, true), SizeDecision::WarnDeep { size_mb: 501 });
+    }
+
+    #[test]
+    fn test_size_decision_large() {
+        let meta = mock_metadata(600 * 1024);
+        assert_eq!(size_decision(&meta, false), SizeDecision::TooLarge { size_mb: 600 });
+        assert_eq!(size_decision(&meta, true), SizeDecision::WarnDeep { size_mb: 600 });
+    }
+
+    #[test]
+    fn test_size_decision_unavailable() {
+        assert_eq!(size_decision(&RepoMetaState::Unavailable, false), SizeDecision::WarnUnknown);
+        assert_eq!(size_decision(&RepoMetaState::Unavailable, true), SizeDecision::WarnUnknown);
+    }
 }

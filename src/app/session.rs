@@ -6,16 +6,18 @@ pub struct InvestigationSession {
     pub repo: RepoRef,
     pub case_id: String,
     pub started_at: SystemTime,
+    pub deep: bool,
 }
 
 impl InvestigationSession {
-    pub fn new(repo: RepoRef) -> Self {
+    pub fn new(repo: RepoRef, deep: bool) -> Self {
         let case_id = generate_case_id(&repo.owner, &repo.repo);
         let started_at = SystemTime::now();
         Self {
             repo,
             case_id,
             started_at,
+            deep,
         }
     }
 }

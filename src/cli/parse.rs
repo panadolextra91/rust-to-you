@@ -75,6 +75,16 @@ pub fn parse_repo_ref(input: &str) -> Result<RepoRef, IntakeError> {
         repo_str.truncate(repo_str.len() - 4);
     }
 
+    // Validate leading dash (D-10)
+    if owner.starts_with('-') || repo_str.starts_with('-') {
+        return Err(IntakeError::UnsafeInput { input: input.to_string() });
+    }
+
+    // Validate length limits (D-11)
+    if owner.len() > 39 || repo_str.len() > 100 {
+        return Err(IntakeError::UnsafeInput { input: input.to_string() });
+    }
+
     // Validate owner and repo segment charsets
     if !is_valid_segment(owner) || !is_valid_segment(&repo_str) {
         return Err(IntakeError::MalformedRepoPath { input: input.to_string() });
@@ -127,7 +137,7 @@ mod tests {
 
     #[test]
     fn test_parse_repo_ref_reject() {
-        let cases = vec![
+        let mut cases = vec![
             ("", IntakeError::EmptyInput),
             ("   ", IntakeError::EmptyInput),
             ("not a url", IntakeError::MalformedRepoPath { input: "not a url".to_string() }),
@@ -140,10 +150,19 @@ mod tests {
             ("git@github.com:tokio-rs/axum.git", IntakeError::NotAUrl { input: "git@github.com:tokio-rs/axum.git".to_string() }),
             ("tokio-rs/axum/../path", IntakeError::MalformedRepoPath { input: "tokio-rs/axum/../path".to_string() }),
             ("tokio-rs/ax\\um", IntakeError::MalformedRepoPath { input: "tokio-rs/ax\\um".to_string() }),
-        ];
+            ("-foo/bar", IntakeError::UnsafeInput { input: "-foo/bar".to_string() }),
+            ("foo/-bar", IntakeError::UnsafeInput { input: "foo/-bar".to_string() }),
+        ].into_iter().map(|(i, e)| (i.to_string(), e)).collect::<Vec<_>>();
+
+        // Add dynamically generated over-length cases
+        let long_owner = format!("{}/repo", "a".repeat(40));
+        cases.push((long_owner.clone(), IntakeError::UnsafeInput { input: long_owner }));
+
+        let long_repo = format!("owner/{}", "b".repeat(101));
+        cases.push((long_repo.clone(), IntakeError::UnsafeInput { input: long_repo }));
 
         for (input, expected_err) in cases {
-            let res = parse_repo_ref(input);
+            let res = parse_repo_ref(&input);
             assert!(
                 res.is_err(),
                 "Expected error for '{}', but got {:?}",
