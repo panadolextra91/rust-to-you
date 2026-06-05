@@ -210,7 +210,17 @@ Plans:
   2. On startup, the tool sweeps away orphaned temp directories left by previously crashed or killed runs, so prior failures self-heal.
   3. No code path exits the process — including panic/abort — while a clone workspace is alive without first cleaning it up.
 
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+
+**Wave 1**
+
+- [ ] 07-01-PLAN.md — hygiene module: LIVE_TEMP slot + idempotent cleanup_live_temp + pure age-based sweep_orphans + signal handler (exit 130) + panic hook, all unit-tested; add ctrlc + libc dev-dep [CLEAN-02, CLEAN-03]
+
+**Wave 2** *(blocked on Wave 1 — needs the hygiene API + ctrlc dep)*
+
+- [ ] 07-02-PLAN.md — Wire D-08 (CloneWorkspace register-on-create/clear-on-Drop) + main() panic hook/signal handler/startup sweep with conditional bilingual notice + tests/interrupt.rs SIGINT/SIGTERM integration test (no orphan + exit 130) [CLEAN-01, CLEAN-02, CLEAN-03]
 
 ## Progress (v1.2.0)
 
@@ -220,4 +230,4 @@ Phases execute in numeric order: 6 → 7
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 6. Safe Intake & Pre-flight Guard | 3/3 | Complete    | 2026-06-05 |
-| 7. Interruptible Lifecycle & Temp Hygiene | 0/? | Not started | - |
+| 7. Interruptible Lifecycle & Temp Hygiene | 0/2 | Planned     | - |
